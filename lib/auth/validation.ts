@@ -28,14 +28,14 @@ export function isValidEmail(email: string) {
 export function validatePassword(password: string): PasswordValidation {
   const checks = [
     {
-      label: "8 to 128 characters",
+      label: "At least 8 characters",
       passed: password.length >= 8 && password.length <= 128,
     },
-    { label: "One uppercase letter", passed: /[A-Z]/.test(password) },
-    { label: "One lowercase letter", passed: /[a-z]/.test(password) },
-    { label: "One number", passed: /\d/.test(password) },
+    { label: "One uppercase letter (A-Z)", passed: /[A-Z]/.test(password) },
+    { label: "One lowercase letter (a-z)", passed: /[a-z]/.test(password) },
+    { label: "One number (0-9)", passed: /\d/.test(password) },
     {
-      label: "One special character",
+      label: "One special character (!@#$%^&*)",
       passed: /[^A-Za-z0-9]/.test(password),
     },
   ];

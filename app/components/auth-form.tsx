@@ -277,9 +277,7 @@ export function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
           />
         ) : null}
 
-        {isSignup ? (
-          <PasswordStrengthMeter validation={passwordValidation} />
-        ) : null}
+        {isSignup ? <PasswordRequirementList validation={passwordValidation} /> : null}
 
         {isSignup ? (
           <AuthInput
@@ -423,58 +421,32 @@ function RoleSelector({
   );
 }
 
-function PasswordStrengthMeter({
+function PasswordRequirementList({
   validation,
 }: Readonly<{ validation: ReturnType<typeof validatePassword> }>) {
-  const strengthStyles = {
-    Weak: {
-      bar: "bg-rose-500",
-      text: "text-rose-600 dark:text-rose-300",
-    },
-    Medium: {
-      bar: "bg-amber-500",
-      text: "text-amber-600 dark:text-amber-300",
-    },
-    Strong: {
-      bar: "bg-emerald-500",
-      text: "text-emerald-600 dark:text-emerald-300",
-    },
-  };
-  const meterWidth =
-    validation.strength === "Strong"
-      ? "w-full"
-      : validation.strength === "Medium"
-        ? "w-2/3"
-        : "w-1/3";
-
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-white/10 dark:bg-white/8">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-black text-slate-700 dark:text-slate-200">
-          Password strength
-        </p>
-        <span
-          className={`text-xs font-black uppercase tracking-[0.16em] ${strengthStyles[validation.strength].text}`}
-        >
-          {validation.strength}
-        </span>
-      </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-        <div
-          className={`h-full rounded-full transition-all ${strengthStyles[validation.strength].bar} ${meterWidth}`}
-        />
-      </div>
-      <ul className="mt-4 grid gap-2 text-sm font-semibold">
+    <div className="rounded-xl border border-slate-200 bg-white/55 px-3 py-2 dark:border-white/10 dark:bg-white/8">
+      <ul className="grid gap-1 text-xs font-bold leading-5 text-slate-500 dark:text-slate-400 sm:grid-cols-2">
         {validation.checks.map((check) => (
           <li
             key={check.label}
-            className={
+            className={`flex items-center gap-1.5 ${
               check.passed
                 ? "text-emerald-600 dark:text-emerald-300"
-                : "text-slate-500 dark:text-slate-400"
-            }
+                : "text-rose-500/80 dark:text-slate-400"
+            }`}
           >
-            {check.passed ? "Pass:" : "Need:"} {check.label}
+            <span
+              aria-hidden="true"
+              className={`flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
+                check.passed
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200"
+                  : "bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-400"
+              }`}
+            >
+              {check.passed ? "✓" : "•"}
+            </span>
+            <span>{check.label}</span>
           </li>
         ))}
       </ul>

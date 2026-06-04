@@ -4,6 +4,8 @@ import { getProviders, signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useToast } from "./toast-provider";
 
+type GoogleOAuthRole = "student" | "teacher";
+
 type SocialProvider = {
   id: "google" | "github" | "apple";
   label: string;
@@ -19,6 +21,7 @@ export function SocialAuthButtons({
   onProviderCountChange,
 }: Readonly<{ onProviderCountChange?: (count: number) => void }>) {
   const [socialProviders, setSocialProviders] = useState<SocialProvider[]>([]);
+  const [googleRole, setGoogleRole] = useState<GoogleOAuthRole>("student");
   const [loadingProvider, setLoadingProvider] = useState<SocialProvider["id"] | null>(
     null,
   );
@@ -56,6 +59,25 @@ export function SocialAuthButtons({
 
   async function continueWithProvider(provider: SocialProvider["id"]) {
     setLoadingProvider(provider);
+
+    if (provider === "google") {
+      const roleResponse = await fetch("/api/auth/oauth-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: googleRole }),
+      });
+
+      if (!roleResponse.ok) {
+        setLoadingProvider(null);
+        showToast({
+          title: "Choose an account type",
+          message: "Select Student or Educator before continuing with Google.",
+          variant: "error",
+        });
+        return;
+      }
+    }
+
     showToast({
       title: "Opening secure sign-in",
       message: `Redirecting to ${providerLabel(provider)}.`,
@@ -72,6 +94,43 @@ export function SocialAuthButtons({
 
   return (
     <div className="space-y-3">
+      {socialProviders.some((provider) => provider.id === "google") ? (
+        <fieldset className="rounded-2xl border border-slate-200 bg-white/60 p-3 dark:border-white/10 dark:bg-white/8">
+          <legend className="px-1 text-xs font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+            Continue with Google as
+          </legend>
+          <div className="mt-1 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-white/10">
+            {[
+              { value: "student", label: "Student" },
+              { value: "teacher", label: "Educator" },
+            ].map((role) => {
+              const checked = googleRole === role.value;
+
+              return (
+                <label
+                  key={role.value}
+                  className={`flex h-10 cursor-pointer items-center justify-center rounded-lg text-sm font-black transition ${
+                    checked
+                      ? "bg-white text-slate-950 shadow-sm dark:bg-slate-950 dark:text-white"
+                      : "text-slate-500 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                  } ${loadingProvider ? "cursor-not-allowed opacity-70" : ""}`}
+                >
+                  <input
+                    checked={checked}
+                    className="sr-only"
+                    disabled={loadingProvider !== null}
+                    name="googleRole"
+                    onChange={() => setGoogleRole(role.value as GoogleOAuthRole)}
+                    type="radio"
+                    value={role.value}
+                  />
+                  {role.label}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ) : null}
       {socialProviders.map((provider) => (
         <button
           key={provider.id}
