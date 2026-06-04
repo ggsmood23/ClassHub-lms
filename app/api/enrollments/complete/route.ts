@@ -4,6 +4,7 @@ import { getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
 import Certificate from "@/lib/models/Certificate";
+import { toJsonSafe } from "@/lib/serialization";
 
 type CourseLesson = {
   _id?: {
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(completedEnrollment, { status: 200 });
+    return NextResponse.json(toJsonSafe(completedEnrollment), { status: 200 });
   } catch (error) {
     console.error("Mark complete error:", error);
     return NextResponse.json(

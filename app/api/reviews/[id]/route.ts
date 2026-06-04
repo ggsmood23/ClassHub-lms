@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentStudent } from "@/lib/auth/current-user";
 import Review from "@/lib/models/Review";
+import { toJsonSafe } from "@/lib/serialization";
 
 type ReviewRouteContext = {
   params: Promise<{
@@ -67,7 +68,7 @@ export async function PUT(request: NextRequest, context: ReviewRouteContext) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, review });
+    return NextResponse.json({ success: true, review: toJsonSafe(review) });
   } catch (error) {
     console.error("Update review error:", error);
     return NextResponse.json({ error: "Failed to update review" }, { status: 500 });

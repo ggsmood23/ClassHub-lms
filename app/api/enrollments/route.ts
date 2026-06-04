@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
+import { toJsonSafe } from "@/lib/serialization";
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       .populate("student", "name email image role")
       .populate("course", "title description price category level");
 
-    return NextResponse.json(populatedEnrollment, { status: 201 });
+    return NextResponse.json(toJsonSafe(populatedEnrollment), { status: 201 });
   } catch (error) {
     console.error("Enrollment error:", error);
     return NextResponse.json(
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest) {
       .populate("course", "title description price category level teacher")
       .sort({ createdAt: -1 });
 
-    return NextResponse.json(enrollments, { status: 200 });
+    return NextResponse.json(toJsonSafe(enrollments), { status: 200 });
   } catch (error) {
     console.error("Fetch enrollments error:", error);
     return NextResponse.json(

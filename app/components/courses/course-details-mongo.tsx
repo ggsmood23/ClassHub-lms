@@ -8,14 +8,14 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { EnrollButton } from "./enroll-button";
 
-type MongoLesson = {
+export type MongoLesson = {
   _id: string;
   title: string;
   duration?: string;
   videoUrl?: string;
 };
 
-type MongoCourse = {
+export type MongoCourse = {
   _id: string;
   title: string;
   description?: string;
@@ -25,7 +25,7 @@ type MongoCourse = {
   isPaid?: boolean;
   thumbnail?: string;
   lessons?: MongoLesson[];
-  students?: unknown[];
+  students?: string[];
   createdAt?: string;
   alreadyEnrolled?: boolean;
   canReview?: boolean;
@@ -36,7 +36,7 @@ type MongoCourse = {
   reviews?: ReviewItem[];
 };
 
-type ReviewItem = {
+export type ReviewItem = {
   _id: string;
   rating: number;
   review: string;

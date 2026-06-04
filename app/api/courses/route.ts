@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/options";
 import connectDB from "@/lib/db";
 import Course from "@/lib/models/Course";
 import User from "@/lib/models/User";
+import { toJsonSafe } from "@/lib/serialization";
 
 export const runtime = "nodejs";
 
@@ -80,7 +81,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      courses,
+      courses: toJsonSafe(courses),
     });
   } catch (error) {
     return NextResponse.json(
@@ -152,7 +153,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-        course,
+        course: toJsonSafe(course),
       },
       { status: 201 },
     );

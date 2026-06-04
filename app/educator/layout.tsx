@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/options";
+import { authOptions, normalizeRole, roleRedirectPath } from "@/lib/auth/options";
 import connectDB from "@/lib/db";
 import User from "@/lib/models/User";
 import { EducatorShell } from "../components/educator/educator-shell";
@@ -19,8 +19,8 @@ export default async function EducatorLayout({
 
   const user = await User.findOne({ email: session.user.email }).select("role");
 
-  if (!user || user.role !== "teacher") {
-    redirect("/dashboard");
+  if (!user || normalizeRole(user.role) !== "teacher") {
+    redirect(roleRedirectPath(user?.role));
   }
 
   return <EducatorShell>{children}</EducatorShell>;

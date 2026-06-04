@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentStudent } from "@/lib/auth/current-user";
 import Certificate from "@/lib/models/Certificate";
+import { toJsonSafe } from "@/lib/serialization";
 
 export async function GET() {
   try {
@@ -19,7 +20,7 @@ export async function GET() {
       .select("studentName courseName completionDate createdAt")
       .sort({ completionDate: -1 });
 
-    return NextResponse.json(certificates, { status: 200 });
+    return NextResponse.json(toJsonSafe(certificates), { status: 200 });
   } catch (error) {
     console.error("Fetch certificates error:", error);
     return NextResponse.json(

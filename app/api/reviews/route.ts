@@ -4,6 +4,7 @@ import { getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
 import Review from "@/lib/models/Review";
+import { toJsonSafe } from "@/lib/serialization";
 
 type ReviewInput = {
   courseId?: string;
@@ -98,7 +99,10 @@ export async function POST(request: NextRequest) {
       "name email image",
     );
 
-    return NextResponse.json({ success: true, review: populatedReview }, { status: 201 });
+    return NextResponse.json(
+      { success: true, review: toJsonSafe(populatedReview) },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Create review error:", error);
     return NextResponse.json({ error: "Failed to create review" }, { status: 500 });

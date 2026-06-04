@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/options";
+import { authOptions, roleRedirectPath } from "@/lib/auth/options";
 import connectDB from "@/lib/db";
 import User from "@/lib/models/User";
 import { AdminShell } from "../components/admin/admin-shell";
@@ -20,7 +20,7 @@ export default async function AdminLayout({
   const user = await User.findOne({ email: session.user.email }).select("role");
 
   if (!user || user.role !== "admin") {
-    redirect("/");
+    redirect(roleRedirectPath(user?.role));
   }
 
   return <AdminShell>{children}</AdminShell>;

@@ -27,18 +27,27 @@ export function SocialAuthButtons({
   useEffect(() => {
     let isMounted = true;
 
-    getProviders().then((providers) => {
-      if (!isMounted) {
-        return;
-      }
+    getProviders()
+      .then((providers) => {
+        if (!isMounted) {
+          return;
+        }
 
-      const configuredProviders = supportedSocialProviders.filter(
-        (provider) => providers?.[provider.id]?.type === "oauth",
-      );
+        const configuredProviders = supportedSocialProviders.filter(
+          (provider) => providers?.[provider.id]?.type === "oauth",
+        );
 
-      setSocialProviders(configuredProviders);
-      onProviderCountChange?.(configuredProviders.length);
-    });
+        setSocialProviders(configuredProviders);
+        onProviderCountChange?.(configuredProviders.length);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSocialProviders([]);
+        onProviderCountChange?.(0);
+      });
 
     return () => {
       isMounted = false;
@@ -53,7 +62,7 @@ export function SocialAuthButtons({
       variant: "info",
     });
 
-    await signIn(provider, { callbackUrl: "/dashboard" });
+    await signIn(provider, { callbackUrl: "/auth-redirect" });
     setLoadingProvider(null);
   }
 

@@ -12,6 +12,7 @@ import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
 import Review from "@/lib/models/Review";
 import User from "@/lib/models/User";
+import { toJsonSafe } from "@/lib/serialization";
 
 export const runtime = "nodejs";
 
@@ -177,7 +178,7 @@ export async function PUT(request: Request, context: CourseRouteContext) {
 
     return NextResponse.json({
       success: true,
-      course,
+      course: toJsonSafe(course),
     });
   } catch (error) {
     return NextResponse.json(
@@ -252,7 +253,7 @@ export async function DELETE(_: Request, context: CourseRouteContext) {
 
     return NextResponse.json({
       success: true,
-      course,
+      course: toJsonSafe(course),
     });
   } catch (error) {
     return NextResponse.json(

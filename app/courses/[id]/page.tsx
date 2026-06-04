@@ -10,7 +10,11 @@ import Enrollment from "@/lib/models/Enrollment";
 import Review from "@/lib/models/Review";
 import User from "@/lib/models/User";
 import { ThemeToggle } from "../../components/theme-toggle";
-import { MongoCourseDetails } from "../../components/courses/course-details-mongo";
+import { toJsonSafe } from "@/lib/serialization";
+import {
+  MongoCourseDetails,
+  type MongoCourse,
+} from "../../components/courses/course-details-mongo";
 
 type CourseDetailsPageProps = {
   params: Promise<{ id: string }>;
@@ -84,7 +88,7 @@ export default async function CourseDetailsPage({ params }: CourseDetailsPagePro
     ? reviews.find((review) => review.student?._id?.toString() === currentUserId)
     : undefined;
 
-  const courseData = {
+  const courseData = toJsonSafe<MongoCourse>({
     _id: course._id.toString(),
     title: course.title || "",
     description: course.description || "",
@@ -99,7 +103,9 @@ export default async function CourseDetailsPage({ params }: CourseDetailsPagePro
       duration: lesson.duration || "",
       videoUrl: lesson.videoUrl || "",
     })),
-    students: course.students || [],
+    students: ((course.students || []) as Array<{ toString(): string }>).map((student) =>
+      student.toString(),
+    ),
     createdAt: course.createdAt?.toISOString(),
     alreadyEnrolled: Boolean(existingEnrollment),
     canReview: Boolean(existingEnrollment && user?.role === "student"),
@@ -122,7 +128,7 @@ export default async function CourseDetailsPage({ params }: CourseDetailsPagePro
         image: review.student?.image || "",
       },
     })),
-  };
+  });
 
   const nav: ReactNode = (
     <nav className="sticky top-0 z-40 border-b border-white/60 bg-white/72 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/62">
