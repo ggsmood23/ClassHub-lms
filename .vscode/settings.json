@@ -1,0 +1,22 @@
+{
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/.next-*/**": true,
+    "**/node_modules/**": true,
+    "**/coverage/**": true,
+    "**/out/**": true,
+    "**/build/**": true
+  },
+  "search.exclude": {
+    "**/.next": true,
+    "**/.next-*": true,
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/out": true,
+    "**/build": true
+  },
+  "typescript.tsserver.watchOptions": {
+    "watchDirectory": "useFsEvents",
+    "watchFile": "useFsEvents"
+  }
+}

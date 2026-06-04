@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+import { AuthForm } from "../../components/auth-form";
+
+export const metadata: Metadata = {
+  title: "Forgot Password | Class Hub",
+  description: "Reset your Class Hub account password.",
+};
+
+export default function ForgotPasswordPage() {
+  return <AuthForm mode="forgot" />;
+}
