@@ -6,5 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <MessagesPage />;
+  return <MessagesPage messages={[]} />;
 }

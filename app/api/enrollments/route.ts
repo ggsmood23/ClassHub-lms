@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
+import { createNotification } from "@/lib/notifications";
 import { toJsonSafe } from "@/lib/serialization";
 
 export async function POST(request: NextRequest) {
@@ -65,6 +66,15 @@ export async function POST(request: NextRequest) {
       { $addToSet: { students: currentStudent.user._id } },
       { new: true },
     );
+
+    if (course.teacher) {
+      await createNotification({
+        user: course.teacher,
+        title: "Enrollment received",
+        message: `${currentStudent.user.name} enrolled in ${course.title}.`,
+        type: "enrollment_received",
+      });
+    }
 
     const populatedEnrollment = await Enrollment.findById(enrollment._id)
       .populate("student", "name email image role")

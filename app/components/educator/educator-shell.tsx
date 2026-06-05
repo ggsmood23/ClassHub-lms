@@ -20,6 +20,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useState, type ReactNode } from "react";
 import { ThemeToggle } from "../theme-toggle";
 
@@ -27,6 +28,13 @@ type EducatorShellUser = {
   name: string;
   email: string;
   image?: string | null;
+};
+
+type EducatorNotification = {
+  id: string;
+  title: string;
+  message: string;
+  read: boolean;
 };
 
 const navItems = [
@@ -41,19 +49,25 @@ const navItems = [
   { label: "Settings", helper: "Studio", icon: Settings, href: "/educator/settings" },
 ];
 
-const notifications = [
-  ["New enrollment spike", "AI Product Design is up 22% today"],
-  ["Submissions ready", "42 assignments need grading"],
-  ["Payout scheduled", "$42.8k payout is processing"],
-];
-
 export function EducatorShell({
   children,
+  notifications,
   user,
-}: Readonly<{ children: ReactNode; user: EducatorShellUser }>) {
+}: Readonly<{
+  children: ReactNode;
+  notifications: EducatorNotification[];
+  user: EducatorShellUser;
+}>) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const initials = getInitials(user.name, user.email);
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    await signOut({ callbackUrl: "/" });
+  }
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f6f8fb] text-slate-950 dark:bg-[#070b12] dark:text-white">
@@ -123,6 +137,14 @@ export function EducatorShell({
 
             <div className="flex items-center gap-2 sm:gap-3">
               <ThemeToggle />
+              <button
+                className="hidden h-11 items-center gap-2 rounded-full border border-slate-200 bg-white/78 px-4 text-sm font-black text-slate-700 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-cyan-300 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-white/10 dark:text-white sm:inline-flex"
+                disabled={isSigningOut}
+                onClick={handleSignOut}
+                type="button"
+              >
+                {isSigningOut ? "Signing out..." : "Logout"}
+              </button>
               <div className="relative">
                 <button
                   onClick={() => setIsNotificationsOpen((open) => !open)}
@@ -131,7 +153,9 @@ export function EducatorShell({
                   aria-label="Open notifications"
                 >
                   <Bell className="size-4" />
-                  <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-cyan-400 ring-2 ring-white dark:ring-slate-950" />
+                  {unreadCount > 0 ? (
+                    <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-cyan-400 ring-2 ring-white dark:ring-slate-950" />
+                  ) : null}
                 </button>
                 <AnimatePresence>
                   {isNotificationsOpen ? (
@@ -144,20 +168,28 @@ export function EducatorShell({
                     >
                       <div className="flex items-center justify-between px-2 py-2">
                         <p className="font-black">Educator alerts</p>
-                        <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-black text-cyan-700 dark:bg-cyan-300/10 dark:text-cyan-200">3 new</span>
+                        <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-black text-cyan-700 dark:bg-cyan-300/10 dark:text-cyan-200">
+                          {unreadCount} new
+                        </span>
                       </div>
                       <div className="mt-2 space-y-2">
-                        {notifications.map(([title, helper]) => (
-                          <div key={title} className="flex gap-3 rounded-2xl bg-slate-50/80 p-3 dark:bg-white/8">
+                        {notifications.length === 0 ? (
+                          <div className="rounded-2xl bg-slate-50/80 p-3 text-sm font-semibold text-slate-500 dark:bg-white/8 dark:text-slate-400">
+                            No educator alerts yet.
+                          </div>
+                        ) : (
+                          notifications.map((notification) => (
+                          <div key={notification.id} className="flex gap-3 rounded-2xl bg-slate-50/80 p-3 dark:bg-white/8">
                             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-cyan-600 shadow-sm dark:bg-white/10 dark:text-cyan-200">
                               <BarChart3 className="size-4" />
                             </span>
                             <div>
-                              <p className="text-sm font-black">{title}</p>
-                              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{helper}</p>
+                              <p className="text-sm font-black">{notification.title}</p>
+                              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{notification.message}</p>
                             </div>
                           </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </motion.div>
                   ) : null}
@@ -174,6 +206,15 @@ export function EducatorShell({
                   sizeClassName="size-8"
                 />
                 <span className="max-w-44 truncate">{user.name}</span>
+              </button>
+              <button
+                className="grid size-11 place-items-center rounded-full border border-slate-200 bg-white/78 text-xs font-black text-slate-700 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-cyan-300 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-white/10 dark:text-white sm:hidden"
+                disabled={isSigningOut}
+                onClick={handleSignOut}
+                type="button"
+                aria-label="Logout"
+              >
+                {isSigningOut ? "..." : "Out"}
               </button>
             </div>
           </div>

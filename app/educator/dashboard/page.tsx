@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/options";
+import { getEducatorDashboardSummary } from "@/lib/educator-dashboard";
 import { getEducatorRevenueSummary } from "@/lib/payment-analytics";
 import User from "@/lib/models/User";
 import { EducatorDashboard } from "../../components/educator/educator-dashboard";
@@ -19,6 +20,19 @@ export default async function EducatorDashboardPage() {
   const revenueSummary = user
     ? await getEducatorRevenueSummary(user._id)
     : { totalRevenue: 0, totalSales: 0, revenuePerCourse: [] };
+  const dashboardSummary = user
+    ? await getEducatorDashboardSummary(user._id)
+    : {
+        stats: { totalStudents: 0, totalCourses: 0, activeCourses: 0 },
+        enrollmentGrowth: [],
+        earningsData: [],
+        recentEnrollments: [],
+      };
 
-  return <EducatorDashboard revenueSummary={revenueSummary} />;
+  return (
+    <EducatorDashboard
+      dashboardSummary={dashboardSummary}
+      revenueSummary={revenueSummary}
+    />
+  );
 }

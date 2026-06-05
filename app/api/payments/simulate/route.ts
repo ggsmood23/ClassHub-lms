@@ -4,6 +4,7 @@ import { getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
 import Payment from "@/lib/models/Payment";
+import { createNotification } from "@/lib/notifications";
 
 type SimulatePaymentRequest = {
   courseId?: string;
@@ -106,6 +107,15 @@ export async function POST(request: NextRequest) {
         { new: true },
       ),
     ]);
+
+    if (course.teacher) {
+      await createNotification({
+        user: course.teacher,
+        title: "Enrollment received",
+        message: `${currentStudent.user.name} purchased ${course.title}.`,
+        type: "enrollment_received",
+      });
+    }
 
     return NextResponse.json(
       {

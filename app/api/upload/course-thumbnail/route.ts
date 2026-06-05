@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       "role",
     );
 
-    if (!educator || educator.role !== "teacher") {
+    if (!educator || (educator.role !== "teacher" && educator.role !== "admin")) {
       return NextResponse.json(
         { error: "Only educators can upload course thumbnails" },
         { status: 403 },

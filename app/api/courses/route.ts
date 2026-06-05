@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/options";
 import connectDB from "@/lib/db";
 import Course from "@/lib/models/Course";
 import User from "@/lib/models/User";
+import { createNotification } from "@/lib/notifications";
 import { toJsonSafe } from "@/lib/serialization";
 
 export const runtime = "nodejs";
@@ -74,7 +75,22 @@ export async function GET() {
   try {
     await connectDB();
 
-    const courses = await Course.find()
+    const manager = await getCourseManager();
+
+    if ("error" in manager) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: manager.error,
+        },
+        { status: manager.status },
+      );
+    }
+
+    const courseQuery =
+      manager.user.role === "admin" ? {} : { teacher: manager.user._id };
+
+    const courses = await Course.find(courseQuery)
       .populate("teacher", "name email image role")
       .populate("students", "name email image role")
       .sort({ createdAt: -1 });
@@ -124,6 +140,8 @@ export async function POST(request: Request) {
     }
 
     const payload = buildCoursePayload(body as CourseInput);
+    delete payload.students;
+    delete payload.teacher;
 
     if (!payload.title?.trim()) {
       return NextResponse.json(
@@ -148,6 +166,13 @@ export async function POST(request: Request) {
     const course = await Course.create({
       ...payload,
       teacher: manager.user._id,
+    });
+
+    await createNotification({
+      user: manager.user._id,
+      title: "Course created",
+      message: `${course.title} was created successfully.`,
+      type: "course_created",
     });
 
     return NextResponse.json(

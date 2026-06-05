@@ -25,14 +25,6 @@ import {
   YAxis,
 } from "recharts";
 import {
-  assignments,
-  earningsData,
-  messages,
-  reviews,
-  students,
-  transactions,
-} from "./educator-data";
-import {
   ClientChartFrame,
   EducatorPanel,
   EducatorTable,
@@ -86,6 +78,54 @@ type EducatorProfile = {
   name: string;
   email: string;
   image?: string | null;
+};
+
+type AssignmentCourseOption = {
+  id: string;
+  title: string;
+};
+
+type AssignmentRow = {
+  id: string;
+  title: string;
+  course: string;
+  dueDate: string;
+  submissions: string;
+  status: string;
+};
+
+type StudentProgressRow = {
+  name: string;
+  course: string;
+  progress: string;
+  status: string;
+  lastActive: string;
+};
+
+type EarningsChartRow = {
+  month: string;
+  revenue: number;
+};
+
+type TransactionRow = {
+  id: string;
+  course: string;
+  amount: string;
+  status: string;
+  date: string;
+};
+
+type MessageRow = {
+  name: string;
+  text: string;
+  time: string;
+};
+
+type ReviewRow = {
+  id: string;
+  course: string;
+  rating: string;
+  text: string;
 };
 
 export function AddCoursePage() {
@@ -981,7 +1021,9 @@ export function MyCoursesPage() {
   );
 }
 
-export function StudentsPage() {
+export function StudentsPage({
+  students,
+}: Readonly<{ students: StudentProgressRow[] }>) {
   return (
     <PageFrame eyebrow="Learners" title="Student progress">
       <EducatorPanel
@@ -989,43 +1031,194 @@ export function StudentsPage() {
         eyebrow="Search and filter"
         action={<SearchBox placeholder="Search students..." />}
       >
-        <EducatorTable
-          headers={["Student", "Course", "Completion", "Status", "Last active"]}
-          rows={students.map(([name, course, progress, status, active]) => [
-            <span key={name} className="font-black text-slate-950 dark:text-white">{name}</span>,
-            course,
-            <span key={progress} className="inline-flex min-w-40 items-center gap-3"><ProgressBar value={Number(progress.replace("%", ""))} /> {progress}</span>,
-            <StatusBadge key={status} status={status} />,
-            active,
-          ])}
-          renderActions
-        />
+        {students.length === 0 ? (
+          <EmptyEducatorState
+            title="No enrolled students yet"
+            description="Students enrolled in your courses will appear here."
+          />
+        ) : (
+          <EducatorTable
+            headers={["Student", "Course", "Completion", "Status", "Last active"]}
+            rows={students.map((student) => [
+              <span key={student.name} className="font-black text-slate-950 dark:text-white">{student.name}</span>,
+              student.course,
+              <span key={student.progress} className="inline-flex min-w-40 items-center gap-3"><ProgressBar value={Number(student.progress.replace("%", ""))} /> {student.progress}</span>,
+              <StatusBadge key={student.status} status={student.status} />,
+              student.lastActive,
+            ])}
+            renderActions
+          />
+        )}
       </EducatorPanel>
     </PageFrame>
   );
 }
 
-export function AssignmentsPage() {
+export function AssignmentsPage({
+  assignments,
+  courses,
+}: Readonly<{
+  assignments: AssignmentRow[];
+  courses: AssignmentCourseOption[];
+}>) {
+  const router = useRouter();
+  const [assignmentForm, setAssignmentForm] = useState({
+    title: "",
+    instructions: "",
+    dueDate: "",
+    courseId: courses[0]?.id || "",
+  });
+  const [isCreatingAssignment, setIsCreatingAssignment] = useState(false);
+  const [assignmentError, setAssignmentError] = useState("");
+  const [assignmentMessage, setAssignmentMessage] = useState("");
+
+  async function handleAssignmentSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAssignmentError("");
+    setAssignmentMessage("");
+    setIsCreatingAssignment(true);
+
+    try {
+      const response = await fetch("/api/assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(assignmentForm),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to create assignment");
+      }
+
+      setAssignmentMessage("Assignment created.");
+      setAssignmentForm({
+        title: "",
+        instructions: "",
+        dueDate: "",
+        courseId: courses[0]?.id || "",
+      });
+      router.refresh();
+    } catch (error) {
+      setAssignmentError(
+        error instanceof Error ? error.message : "Failed to create assignment",
+      );
+    } finally {
+      setIsCreatingAssignment(false);
+    }
+  }
+
   return (
     <PageFrame eyebrow="Assignments" title="Create, collect, and grade work">
       <div className="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
         <EducatorPanel title="Create assignment" eyebrow="New task">
-          <div className="space-y-4">
-            <input className={inputClass} placeholder="Assignment title" />
-            <textarea className={`${inputClass} min-h-32 resize-none`} placeholder="Instructions and rubric..." />
-            <input className={inputClass} type="date" />
-            <button className="w-full rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-cyan-600 dark:bg-white dark:text-slate-950" type="button">Create assignment</button>
-          </div>
+          <form className="space-y-4" onSubmit={handleAssignmentSubmit}>
+            <input
+              className={inputClass}
+              onChange={(event) =>
+                setAssignmentForm((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
+              }
+              placeholder="Assignment title"
+              required
+              value={assignmentForm.title}
+            />
+            <select
+              className={inputClass}
+              disabled={courses.length === 0}
+              onChange={(event) =>
+                setAssignmentForm((current) => ({
+                  ...current,
+                  courseId: event.target.value,
+                }))
+              }
+              required
+              value={assignmentForm.courseId}
+            >
+              {courses.length === 0 ? (
+                <option value="">Create a course first</option>
+              ) : (
+                courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.title}
+                  </option>
+                ))
+              )}
+            </select>
+            <textarea
+              className={`${inputClass} min-h-32 resize-none`}
+              onChange={(event) =>
+                setAssignmentForm((current) => ({
+                  ...current,
+                  instructions: event.target.value,
+                }))
+              }
+              placeholder="Instructions and rubric..."
+              value={assignmentForm.instructions}
+            />
+            <input
+              className={inputClass}
+              onChange={(event) =>
+                setAssignmentForm((current) => ({
+                  ...current,
+                  dueDate: event.target.value,
+                }))
+              }
+              type="date"
+              value={assignmentForm.dueDate}
+            />
+            {assignmentMessage ? (
+              <p className="text-sm font-black text-emerald-700 dark:text-emerald-200">
+                {assignmentMessage}
+              </p>
+            ) : null}
+            {assignmentError ? (
+              <p className="text-sm font-black text-rose-700 dark:text-rose-200">
+                {assignmentError}
+              </p>
+            ) : null}
+            <button
+              className="w-full rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-950"
+              disabled={isCreatingAssignment || courses.length === 0}
+              type="submit"
+            >
+              {isCreatingAssignment ? "Creating..." : "Create assignment"}
+            </button>
+          </form>
         </EducatorPanel>
         <EducatorPanel title="Submissions" eyebrow="Grading status">
-          <EducatorTable headers={["Assignment", "Course", "Due date", "Submissions", "Status"]} rows={assignments.map(([a, b, c, d, e]) => [a, b, c, d, <StatusBadge key={e} status={e} />])} renderActions />
+          {assignments.length === 0 ? (
+            <EmptyEducatorState
+              title="No assignments yet"
+              description="Assignments you create for your own courses will appear here."
+            />
+          ) : (
+            <EducatorTable
+              headers={["Assignment", "Course", "Due date", "Submissions", "Status"]}
+              rows={assignments.map((assignment) => [
+                assignment.title,
+                assignment.course,
+                assignment.dueDate,
+                assignment.submissions,
+                <StatusBadge key={assignment.id} status={assignment.status} />,
+              ])}
+              renderActions
+            />
+          )}
         </EducatorPanel>
       </div>
     </PageFrame>
   );
 }
 
-export function EarningsPage() {
+export function EarningsPage({
+  earningsData,
+  transactions,
+}: Readonly<{
+  earningsData: EarningsChartRow[];
+  transactions: TransactionRow[];
+}>) {
   return (
     <PageFrame eyebrow="Revenue" title="Earnings analytics">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26rem]">
@@ -1043,19 +1236,34 @@ export function EarningsPage() {
           </ClientChartFrame>
         </EducatorPanel>
         <EducatorPanel title="Transactions" eyebrow="Latest">
-          <EducatorTable headers={["ID", "Course", "Amount", "Status", "Date"]} rows={transactions.map(([a, b, c, d, e]) => [a, b, c, <StatusBadge key={d} status={d} />, e])} />
+          {transactions.length === 0 ? (
+            <EmptyEducatorState
+              title="No transactions yet"
+              description="Successful payments for your courses will appear here."
+            />
+          ) : (
+            <EducatorTable headers={["ID", "Course", "Amount", "Status", "Date"]} rows={transactions.map((transaction) => [transaction.id, transaction.course, transaction.amount, <StatusBadge key={transaction.id} status={transaction.status} />, transaction.date])} />
+          )}
         </EducatorPanel>
       </div>
     </PageFrame>
   );
 }
 
-export function MessagesPage() {
+export function MessagesPage({
+  messages,
+}: Readonly<{ messages: MessageRow[] }>) {
   return (
     <PageFrame eyebrow="Messages" title="Learner conversations">
       <EducatorPanel title="Inbox" eyebrow="Recent">
         <div className="space-y-3">
-          {messages.map(([name, text, time]) => (
+          {messages.length === 0 ? (
+            <EmptyEducatorState
+              title="No messages yet"
+              description="Learner messages are not configured yet."
+            />
+          ) : (
+            messages.map(({ name, text, time }) => (
             <div key={name} className="flex gap-3 rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
               <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-slate-950 text-xs font-black text-white dark:bg-white dark:text-slate-950">{name.split(" ").map((part) => part[0]).join("")}</span>
               <div className="min-w-0">
@@ -1064,26 +1272,36 @@ export function MessagesPage() {
                 <p className="mt-1 text-xs font-black text-cyan-700 dark:text-cyan-200">{time}</p>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </EducatorPanel>
     </PageFrame>
   );
 }
 
-export function ReviewsPage() {
+export function ReviewsPage({
+  reviews,
+}: Readonly<{ reviews: ReviewRow[] }>) {
   return (
     <PageFrame eyebrow="Reviews" title="Course feedback">
       <EducatorPanel title="Recent reviews" eyebrow="Ratings">
         <div className="grid gap-4 md:grid-cols-3">
-          {reviews.map(([course, rating, text]) => (
-            <article key={course} className="rounded-[1.5rem] border border-slate-200/70 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
+          {reviews.length === 0 ? (
+            <EmptyEducatorState
+              title="No reviews yet"
+              description="Reviews for your courses will appear here."
+            />
+          ) : (
+            reviews.map((review) => (
+            <article key={review.id} className="rounded-[1.5rem] border border-slate-200/70 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
               <Star className="size-6 fill-current text-amber-400" />
-              <p className="mt-4 text-3xl font-black">{rating}</p>
-              <h3 className="mt-2 font-black">{course}</h3>
-              <p className="mt-3 text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">{text}</p>
+              <p className="mt-4 text-3xl font-black">{review.rating}</p>
+              <h3 className="mt-2 font-black">{review.course}</h3>
+              <p className="mt-3 text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">{review.text}</p>
             </article>
-          ))}
+            ))
+          )}
         </div>
       </EducatorPanel>
     </PageFrame>

@@ -4,6 +4,7 @@ import { getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
 import Certificate from "@/lib/models/Certificate";
+import { createNotification } from "@/lib/notifications";
 import { toJsonSafe } from "@/lib/serialization";
 
 type CourseLesson = {
@@ -58,6 +59,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const wasCompleted = Boolean(enrollment.completed);
+
     await Enrollment.updateOne(
       { _id: enrollment._id },
       { $addToSet: { completedLessons: lessonId } },
@@ -78,7 +81,7 @@ export async function POST(request: NextRequest) {
       .populate("student", "name email image")
       .populate("course", "title");
 
-    if (completed) {
+    if (completed && !wasCompleted) {
       await Certificate.findOneAndUpdate(
         {
           student: currentStudent.user._id,
@@ -95,6 +98,22 @@ export async function POST(request: NextRequest) {
         },
         { upsert: true, new: true },
       );
+
+      if (course.teacher) {
+        await createNotification({
+          user: course.teacher,
+          title: "Course completed",
+          message: `${currentStudent.user.name} completed ${course.title}.`,
+          type: "course_completed",
+        });
+      }
+
+      await createNotification({
+        user: currentStudent.user._id,
+        title: "Course completed",
+        message: `You completed ${course.title}.`,
+        type: "course_completed",
+      });
     }
 
     return NextResponse.json(toJsonSafe(completedEnrollment), { status: 200 });

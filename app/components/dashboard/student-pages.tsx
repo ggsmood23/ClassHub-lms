@@ -18,11 +18,13 @@ type CertificateData = {
   completionDate: string;
 };
 
-const assignments = [
-  ["Design critique", "UI Design Fundamentals", "Due Jun 8", "In progress"],
-  ["Data dashboard brief", "Data Analytics Essentials", "Due Jun 12", "Not started"],
-  ["API integration exercise", "Full-Stack Web Apps", "Due Jun 15", "Not started"],
-];
+type StudentAssignment = {
+  id: string;
+  title: string;
+  course: string;
+  due: string;
+  status: string;
+};
 
 const calendarItems = [
   ["Jun 5", "Live mentor session", "UI Design Fundamentals", "6:00 PM"],
@@ -63,7 +65,11 @@ const settingsItems: Array<{
   },
 ];
 
-export function StudentAssignmentsPage() {
+export function StudentAssignmentsPage({
+  assignments,
+}: {
+  assignments: StudentAssignment[];
+}) {
   return (
     <StudentPageFrame
       eyebrow="Coursework"
@@ -72,9 +78,16 @@ export function StudentAssignmentsPage() {
     >
       <StudentPanel>
         <div className="divide-y divide-slate-200/80 dark:divide-white/10">
-          {assignments.map(([title, course, due, status]) => (
+          {assignments.length === 0 ? (
+            <EmptyState
+              icon={<FileText className="size-10" />}
+              title="No assignments yet"
+              description="Assignments from enrolled courses will appear here."
+            />
+          ) : (
+            assignments.map(({ id, title, course, due, status }) => (
             <div
-              key={title}
+              key={id}
               className="flex min-w-0 flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
@@ -88,7 +101,8 @@ export function StudentAssignmentsPage() {
                 </span>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </StudentPanel>
     </StudentPageFrame>

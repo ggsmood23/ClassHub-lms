@@ -19,14 +19,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { EducatorDashboardSummary } from "@/lib/educator-dashboard";
 import type { EducatorRevenueSummary } from "@/lib/payment-analytics";
-import {
-  activityFeed,
-  earningsData,
-  educatorStats,
-  enrollmentGrowth,
-  recentEnrollments,
-} from "./educator-data";
 import { ClientChartFrame, EducatorPanel, EducatorStatCard, EducatorTable } from "./educator-ui";
 
 const statIcons = [Users, BookOpenCheck, BadgeDollarSign, BookOpenCheck];
@@ -36,11 +30,25 @@ function formatMoney(value: number) {
 }
 
 export function EducatorDashboard({
+  dashboardSummary,
   revenueSummary,
-}: Readonly<{ revenueSummary: EducatorRevenueSummary }>) {
+}: Readonly<{
+  dashboardSummary: EducatorDashboardSummary;
+  revenueSummary: EducatorRevenueSummary;
+}>) {
   const stats = [
-    educatorStats[0],
-    educatorStats[1],
+    {
+      label: "Total students",
+      value: dashboardSummary.stats.totalStudents.toLocaleString(),
+      change: "Unique learners in your courses",
+      gradient: "from-cyan-400 to-blue-500",
+    },
+    {
+      label: "Total courses",
+      value: dashboardSummary.stats.totalCourses.toLocaleString(),
+      change: "Courses owned by you",
+      gradient: "from-emerald-400 to-teal-500",
+    },
     {
       label: "Total revenue",
       value: formatMoney(revenueSummary.totalRevenue),
@@ -48,9 +56,9 @@ export function EducatorDashboard({
       gradient: "from-violet-400 to-fuchsia-500",
     },
     {
-      label: "Total sales",
-      value: revenueSummary.totalSales.toLocaleString(),
-      change: "Paid course transactions",
+      label: "Active courses",
+      value: dashboardSummary.stats.activeCourses.toLocaleString(),
+      change: "Owned courses with enrollments",
       gradient: "from-amber-300 to-orange-500",
     },
   ];
@@ -69,15 +77,15 @@ export function EducatorDashboard({
         <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_25rem]">
           <div className="min-w-0 space-y-6">
             <div className="grid gap-6 xl:grid-cols-2">
-              <EnrollmentChart />
-              <EarningsChart />
+              <EnrollmentChart data={dashboardSummary.enrollmentGrowth} />
+              <EarningsChart data={dashboardSummary.earningsData} />
             </div>
-            <RecentEnrollments />
+            <RecentEnrollments rows={dashboardSummary.recentEnrollments} />
             <RevenuePerCourse revenueSummary={revenueSummary} />
           </div>
           <div className="space-y-6">
             <QuickActions />
-            <ActivityFeed />
+            <ActivityFeed revenueSummary={revenueSummary} />
           </div>
         </div>
       </div>
@@ -140,12 +148,14 @@ function EducatorHero() {
   );
 }
 
-function EnrollmentChart() {
+function EnrollmentChart({
+  data,
+}: Readonly<{ data: EducatorDashboardSummary["enrollmentGrowth"] }>) {
   return (
     <EducatorPanel eyebrow="Analytics" title="Enrollment growth">
       <ClientChartFrame>
         <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={288} debounce={80}>
-          <AreaChart data={enrollmentGrowth} margin={{ left: -18, right: 8, top: 8 }}>
+          <AreaChart data={data} margin={{ left: -18, right: 8, top: 8 }}>
             <defs>
               <linearGradient id="educatorEnrollment" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.34} />
@@ -164,12 +174,14 @@ function EnrollmentChart() {
   );
 }
 
-function EarningsChart() {
+function EarningsChart({
+  data,
+}: Readonly<{ data: EducatorDashboardSummary["earningsData"] }>) {
   return (
     <EducatorPanel eyebrow="Revenue" title="Monthly earnings">
       <ClientChartFrame>
         <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={288} debounce={80}>
-          <BarChart data={earningsData} margin={{ left: -18, right: 8, top: 8 }}>
+          <BarChart data={data} margin={{ left: -18, right: 8, top: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
             <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
@@ -182,13 +194,21 @@ function EarningsChart() {
   );
 }
 
-function RecentEnrollments() {
+function RecentEnrollments({
+  rows,
+}: Readonly<{ rows: EducatorDashboardSummary["recentEnrollments"] }>) {
   return (
     <EducatorPanel eyebrow="Students" title="Recent enrollments">
-      <EducatorTable
-        headers={["Student", "Course", "Payment", "Joined"]}
-        rows={recentEnrollments.map((row) => row.map((cell) => cell))}
-      />
+      {rows.length === 0 ? (
+        <p className="rounded-[1.5rem] border border-dashed border-slate-300 p-5 text-sm font-semibold text-slate-500 dark:border-white/10 dark:text-slate-400">
+          No enrollments yet.
+        </p>
+      ) : (
+        <EducatorTable
+          headers={["Student", "Course", "Progress", "Joined"]}
+          rows={rows.map((row) => row.map((cell) => cell))}
+        />
+      )}
     </EducatorPanel>
   );
 }
@@ -219,7 +239,27 @@ function QuickActions() {
   );
 }
 
-function ActivityFeed() {
+function ActivityFeed({
+  revenueSummary,
+}: Readonly<{ revenueSummary: EducatorRevenueSummary }>) {
+  const activityFeed = [
+    [
+      "Revenue",
+      `${formatMoney(revenueSummary.totalRevenue)} total successful payments.`,
+      "Live",
+    ],
+    [
+      "Sales",
+      `${revenueSummary.totalSales.toLocaleString()} paid course transaction${revenueSummary.totalSales === 1 ? "" : "s"}.`,
+      "Live",
+    ],
+    [
+      "Courses",
+      `${revenueSummary.revenuePerCourse.length.toLocaleString()} course${revenueSummary.revenuePerCourse.length === 1 ? "" : "s"} with revenue.`,
+      "Live",
+    ],
+  ];
+
   return (
     <EducatorPanel eyebrow="Activity" title="Studio feed">
       <div className="space-y-5">

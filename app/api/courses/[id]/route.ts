@@ -7,11 +7,14 @@ import {
   getCourseThumbnailPublicId,
 } from "@/lib/course-thumbnails";
 import connectDB from "@/lib/db";
+import Assignment from "@/lib/models/Assignment";
 import Certificate from "@/lib/models/Certificate";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
+import Payment from "@/lib/models/Payment";
 import Review from "@/lib/models/Review";
 import User from "@/lib/models/User";
+import { createNotification } from "@/lib/notifications";
 import { toJsonSafe } from "@/lib/serialization";
 
 export const runtime = "nodejs";
@@ -136,6 +139,7 @@ export async function PUT(request: Request, context: CourseRouteContext) {
 
     const payload = buildCoursePayload(body as CourseInput);
     delete payload.teacher;
+    delete payload.students;
 
     if (payload.title !== undefined && !payload.title.trim()) {
       return NextResponse.json(
@@ -175,6 +179,13 @@ export async function PUT(request: Request, context: CourseRouteContext) {
         { status: 404 },
       );
     }
+
+    await createNotification({
+      user: course.teacher,
+      title: "Course updated",
+      message: `${course.title} was updated.`,
+      type: "course_updated",
+    });
 
     return NextResponse.json({
       success: true,
@@ -232,7 +243,9 @@ export async function DELETE(_: Request, context: CourseRouteContext) {
 
     await Promise.all([
       Enrollment.deleteMany({ course: course._id }),
+      Assignment.deleteMany({ course: course._id }),
       Certificate.deleteMany({ course: course._id }),
+      Payment.deleteMany({ course: course._id }),
       Review.deleteMany({ course: course._id }),
       User.updateMany(
         { enrolledCourses: course._id },
