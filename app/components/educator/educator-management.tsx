@@ -82,6 +82,12 @@ type MongoCourse = {
   students?: unknown[];
 };
 
+type EducatorProfile = {
+  name: string;
+  email: string;
+  image?: string | null;
+};
+
 export function AddCoursePage() {
   const router = useRouter();
   const [form, setForm] = useState<CourseFormState>({
@@ -1084,14 +1090,21 @@ export function ReviewsPage() {
   );
 }
 
-export function SettingsPage() {
+export function SettingsPage({
+  user,
+}: Readonly<{ user: EducatorProfile }>) {
+  const educatorSlug = user.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
   return (
     <PageFrame eyebrow="Settings" title="Educator studio settings">
       <EducatorPanel title="Profile and publishing preferences" eyebrow="Account">
         <div className="grid gap-5 md:grid-cols-2">
-          <FormField label="Display name"><input className={inputClass} defaultValue="Maya Johnson" /></FormField>
-          <FormField label="Public educator URL"><input className={inputClass} defaultValue="classhub.com/educators/maya" /></FormField>
-          <FormField label="Notification email"><input className={inputClass} defaultValue="maya@classhub.test" /></FormField>
+          <FormField label="Display name"><input className={inputClass} defaultValue={user.name} /></FormField>
+          <FormField label="Public educator URL"><input className={inputClass} defaultValue={`classhub.com/educators/${educatorSlug || "profile"}`} /></FormField>
+          <FormField label="Notification email"><input className={inputClass} defaultValue={user.email} /></FormField>
           <FormField label="Default course visibility"><select className={inputClass} defaultValue="Draft"><option>Draft</option><option>Published</option></select></FormField>
         </div>
       </EducatorPanel>

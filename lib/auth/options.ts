@@ -66,7 +66,11 @@ async function syncOAuthUser({
     dbUser.verificationToken = undefined;
     dbUser.verificationTokenExpires = undefined;
 
-    if (profileImage && !dbUser.image) {
+    if (displayName && dbUser.name !== displayName) {
+      dbUser.name = displayName;
+    }
+
+    if (profileImage && dbUser.image !== profileImage) {
       dbUser.image = profileImage;
     }
 
@@ -164,15 +168,17 @@ export const authOptions: NextAuthOptions = {
         token.picture = user.image;
       }
 
-      if (token.email && !token.role) {
+      if (token.email) {
         await connectDB();
 
         const dbUser = await User.findOne({ email: normalizeEmail(token.email) }).select(
-          "_id role image",
+          "_id name email role image",
         );
 
         if (dbUser) {
           token.id = dbUser._id.toString();
+          token.name = dbUser.name;
+          token.email = dbUser.email;
           token.role = dbUser.role;
           token.picture = dbUser.image;
         }

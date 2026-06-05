@@ -98,7 +98,7 @@ export const recentEnrollments = [
 ];
 
 export const activityFeed = [
-  ["New review", "Maya left a 5-star review on AI Product Design", "8 min ago"],
+  ["New review", "A learner left a 5-star review on AI Product Design", "8 min ago"],
   ["Assignment submitted", "18 learners submitted the API project", "32 min ago"],
   ["Payout ready", "June educator payout is ready for review", "2 hr ago"],
   ["Course milestone", "Portfolio Critique crossed 40 enrollments", "Yesterday"],
@@ -120,7 +120,7 @@ export const transactions = [
 
 export const messages = [
   ["Daniel Kim", "Can you review my deployment checklist?", "12 min ago"],
-  ["Maya Johnson", "New cohort feedback is ready.", "44 min ago"],
+  ["Cohort feedback", "New cohort feedback is ready.", "44 min ago"],
   ["Priya Shah", "Dashboard rubric question", "2 hr ago"],
 ];
 

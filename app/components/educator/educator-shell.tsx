@@ -8,7 +8,6 @@ import {
   BookOpenCheck,
   FilePlus2,
   FileText,
-  GraduationCap,
   LayoutDashboard,
   Menu,
   MessageSquare,
@@ -18,10 +17,17 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { ThemeToggle } from "../theme-toggle";
+
+type EducatorShellUser = {
+  name: string;
+  email: string;
+  image?: string | null;
+};
 
 const navItems = [
   { label: "Dashboard", helper: "Overview", icon: LayoutDashboard, href: "/educator/dashboard" },
@@ -41,16 +47,23 @@ const notifications = [
   ["Payout scheduled", "$42.8k payout is processing"],
 ];
 
-export function EducatorShell({ children }: Readonly<{ children: ReactNode }>) {
+export function EducatorShell({
+  children,
+  user,
+}: Readonly<{ children: ReactNode; user: EducatorShellUser }>) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const initials = getInitials(user.name, user.email);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f6f8fb] text-slate-950 dark:bg-[#070b12] dark:text-white">
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_8%_8%,rgba(34,211,238,0.16),transparent_32%),radial-gradient(circle_at_92%_18%,rgba(99,102,241,0.14),transparent_30%),linear-gradient(180deg,#f8fafc,#eef3f9)] dark:bg-[radial-gradient(circle_at_8%_8%,rgba(45,212,191,0.14),transparent_30%),radial-gradient(circle_at_92%_18%,rgba(129,140,248,0.14),transparent_30%),linear-gradient(180deg,#070b12,#0f172a)]" />
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[18.5rem] border-r border-white/70 bg-white/66 p-4 shadow-2xl shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/62 lg:block">
-        <EducatorSidebar onNavigate={() => setIsSidebarOpen(false)} />
+        <EducatorSidebar
+          onNavigate={() => setIsSidebarOpen(false)}
+          user={user}
+        />
       </aside>
 
       <AnimatePresence>
@@ -77,7 +90,10 @@ export function EducatorShell({ children }: Readonly<{ children: ReactNode }>) {
               >
                 <X className="size-4" />
               </button>
-              <EducatorSidebar onNavigate={() => setIsSidebarOpen(false)} />
+              <EducatorSidebar
+                onNavigate={() => setIsSidebarOpen(false)}
+                user={user}
+              />
             </motion.aside>
           </motion.div>
         ) : null}
@@ -151,8 +167,13 @@ export function EducatorShell({ children }: Readonly<{ children: ReactNode }>) {
                 className="hidden items-center gap-3 rounded-full bg-slate-950 py-1.5 pl-1.5 pr-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-cyan-600 dark:bg-white dark:text-slate-950 sm:inline-flex"
                 type="button"
               >
-                <span className="grid size-8 place-items-center rounded-full bg-white/12 text-xs dark:bg-slate-950/8">MJ</span>
-                Maya Johnson
+                <ProfileAvatar
+                  image={user.image}
+                  initials={initials}
+                  name={user.name}
+                  sizeClassName="size-8"
+                />
+                <span className="max-w-44 truncate">{user.name}</span>
               </button>
             </div>
           </div>
@@ -163,8 +184,12 @@ export function EducatorShell({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
-function EducatorSidebar({ onNavigate }: Readonly<{ onNavigate: () => void }>) {
+function EducatorSidebar({
+  onNavigate,
+  user,
+}: Readonly<{ onNavigate: () => void; user: EducatorShellUser }>) {
   const pathname = usePathname();
+  const initials = getInitials(user.name, user.email);
 
   return (
     <div className="flex h-full flex-col">
@@ -210,12 +235,17 @@ function EducatorSidebar({ onNavigate }: Readonly<{ onNavigate: () => void }>) {
 
       <div className="mt-auto overflow-hidden rounded-[1.5rem] border border-cyan-200/50 bg-gradient-to-br from-cyan-50/90 to-white/75 p-4 shadow-sm backdrop-blur-xl dark:border-cyan-300/10 dark:from-cyan-300/10 dark:to-white/5">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950">
-            <GraduationCap className="size-5" />
-          </span>
-          <div>
-            <p className="text-sm font-black">Creator Pro</p>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">92% studio health</p>
+          <ProfileAvatar
+            image={user.image}
+            initials={initials}
+            name={user.name}
+            sizeClassName="size-10"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-black">{user.name}</p>
+            <p className="truncate text-xs font-bold text-slate-500 dark:text-slate-400">
+              {user.email}
+            </p>
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/80 dark:bg-white/10">
@@ -224,4 +254,51 @@ function EducatorSidebar({ onNavigate }: Readonly<{ onNavigate: () => void }>) {
       </div>
     </div>
   );
+}
+
+function ProfileAvatar({
+  image,
+  initials,
+  name,
+  sizeClassName,
+}: Readonly<{
+  image?: string | null;
+  initials: string;
+  name: string;
+  sizeClassName: string;
+}>) {
+  if (image) {
+    return (
+      <span
+        className={`relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-white/12 text-xs dark:bg-slate-950/8 ${sizeClassName}`}
+      >
+        <Image
+          alt={`${name} profile photo`}
+          className="object-cover"
+          fill
+          sizes="40px"
+          src={image}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={`grid shrink-0 place-items-center rounded-full bg-white/12 text-xs font-black dark:bg-slate-950/8 ${sizeClassName}`}
+    >
+      {initials}
+    </span>
+  );
+}
+
+function getInitials(name: string, email: string) {
+  const initials = name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return initials || email.slice(0, 2).toUpperCase();
 }
