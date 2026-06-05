@@ -31,7 +31,7 @@ const calendarItems = [
 ];
 
 const messages = [
-  ["Maya Johnson", "Your feedback is ready for the latest lesson.", "Today"],
+  ["Course educator", "Your feedback is ready for the latest lesson.", "Today"],
   ["Class Hub Support", "Welcome to your learner workspace.", "Yesterday"],
   ["Arjun Mehta", "The next live session agenda is available.", "May 30"],
 ];

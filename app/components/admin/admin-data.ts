@@ -52,7 +52,7 @@ export const students = [
 ];
 
 export const teachers = [
-  { name: "Maya Johnson", specialty: "Product Design", courses: "18", rating: "4.9", status: "Verified", earnings: "$42.8k" },
+  { name: "Demo Educator", specialty: "Product Design", courses: "18", rating: "4.9", status: "Verified", earnings: "$42.8k" },
   { name: "Daniel Kim", specialty: "Full-Stack", courses: "12", rating: "4.8", status: "Verified", earnings: "$38.2k" },
   { name: "Rhea Thomas", specialty: "Data Analytics", courses: "9", rating: "4.9", status: "Review", earnings: "$24.6k" },
   { name: "Omar Lee", specialty: "Marketing", courses: "7", rating: "4.7", status: "Verified", earnings: "$18.1k" },
@@ -60,7 +60,7 @@ export const teachers = [
 ];
 
 export const courses = [
-  { title: "AI Product Design", teacher: "Maya Johnson", category: "Design", students: "3,280", revenue: "$82.4k", status: "Published" },
+  { title: "AI Product Design", teacher: "Demo Educator", category: "Design", students: "3,280", revenue: "$82.4k", status: "Published" },
   { title: "Full-Stack Web Apps", teacher: "Daniel Kim", category: "Development", students: "4,110", revenue: "$101.2k", status: "Published" },
   { title: "Data Analytics Mastery", teacher: "Rhea Thomas", category: "Data", students: "2,460", revenue: "$57.6k", status: "Review" },
   { title: "Growth Marketing Studio", teacher: "Omar Lee", category: "Marketing", students: "1,920", revenue: "$36.8k", status: "Published" },
@@ -91,7 +91,7 @@ export const notifications = [
 export const activityFeed = [
   ["Course approved", "React Server Patterns was cleared for publishing", "7 min ago"],
   ["Report escalated", "Copyright report moved to legal review", "24 min ago"],
-  ["Teacher verified", "Maya Johnson completed profile checks", "1 hr ago"],
+  ["Teacher verified", "A demo educator completed profile checks", "1 hr ago"],
   ["Payout reviewed", "$84.2k in creator payouts approved", "Today"],
 ];
 
