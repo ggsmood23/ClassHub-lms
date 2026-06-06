@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentStudent } from "@/lib/auth/current-user";
+import { getCurrentAdmin, getCurrentStudent } from "@/lib/auth/current-user";
 import Course from "@/lib/models/Course";
 import Enrollment from "@/lib/models/Enrollment";
 import Review from "@/lib/models/Review";
 import { toJsonSafe } from "@/lib/serialization";
+
+export const runtime = "nodejs";
 
 type ReviewInput = {
   courseId?: string;
@@ -106,5 +108,34 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create review error:", error);
     return NextResponse.json({ error: "Failed to create review" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const currentAdmin = await getCurrentAdmin();
+
+    if ("error" in currentAdmin) {
+      return NextResponse.json(
+        { success: false, message: currentAdmin.error },
+        { status: currentAdmin.status },
+      );
+    }
+
+    const reviews = await Review.find()
+      .populate("student", "name email image role")
+      .populate("course", "title teacher")
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json({
+      success: true,
+      reviews: toJsonSafe(reviews),
+    });
+  } catch (error) {
+    console.error("Fetch reviews error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch reviews" },
+      { status: 500 },
+    );
   }
 }

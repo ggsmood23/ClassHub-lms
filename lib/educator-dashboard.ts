@@ -1,5 +1,6 @@
 import "server-only";
 
+import connectDB from "@/lib/db";
 import Enrollment from "@/lib/models/Enrollment";
 import Course from "@/lib/models/Course";
 import Payment from "@/lib/models/Payment";
@@ -80,6 +81,8 @@ function formatDate(value?: Date) {
 export async function getEducatorDashboardSummary(
   teacherId: unknown,
 ): Promise<EducatorDashboardSummary> {
+  await connectDB();
+
   const courses = await Course.find({ teacher: teacherId })
     .select("_id title students")
     .lean<CourseRow[]>();

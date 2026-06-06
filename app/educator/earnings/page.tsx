@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
 import { EarningsPage } from "../../components/educator/educator-management";
 import { authOptions } from "@/lib/auth/options";
+import { formatINR } from "@/lib/currency";
 import { getEducatorDashboardSummary } from "@/lib/educator-dashboard";
 import connectDB from "@/lib/db";
 import Course from "@/lib/models/Course";
@@ -62,7 +63,7 @@ export default async function Page() {
       transactions={payments.map((payment) => ({
         id: payment.transactionId || payment._id.toString(),
         course: payment.course?.title || "Deleted course",
-        amount: `$${(payment.amount ?? 0).toLocaleString()}`,
+        amount: formatINR(payment.amount ?? 0),
         status: payment.status || "pending",
         date: formatDate(payment.createdAt),
       }))}

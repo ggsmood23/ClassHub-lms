@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { formatINR } from "@/lib/currency";
 import { EnrollButton } from "./enroll-button";
 
 export type MongoLesson = {
@@ -186,7 +187,7 @@ export function MongoCourseDetails({ course }: { course: MongoCourse }) {
               {course.price !== undefined ? (
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Price</p>
-                  <p>${course.price.toLocaleString()}</p>
+                  <p>{formatINR(course.price)}</p>
                 </div>
               ) : null}
             </div>

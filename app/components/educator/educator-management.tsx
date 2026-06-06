@@ -34,6 +34,7 @@ import {
   StatusBadge,
   inputClass,
 } from "./educator-ui";
+import { formatINR } from "@/lib/currency";
 
 type CourseFormState = {
   title: string;
@@ -497,12 +498,6 @@ export function AddCoursePage() {
         </EducatorPanel>
 
         <div className="space-y-6">
-          <EducatorPanel eyebrow="Publishing" title="MongoDB ready">
-            <div className="space-y-3 text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-              <p className="font-black text-slate-950 dark:text-white">This form saves directly to the Class Hub courses collection.</p>
-              <p>After creation, you will be sent to My Courses where the latest records are fetched from the API.</p>
-            </div>
-          </EducatorPanel>
           <EducatorPanel eyebrow="Fields" title="Included">
             <div className="grid grid-cols-2 gap-3 text-sm font-black">
               {["Title", "Description", "Thumbnail", "Price", "Category", "Level"].map((item) => (
@@ -814,7 +809,7 @@ export function MyCoursesPage() {
               </div>
               <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
                 <p className="text-sm font-black text-slate-500 dark:text-slate-400">Listed value</p>
-                <p className="mt-2 text-3xl font-black">${totalRevenue.toLocaleString()}</p>
+                <p className="mt-2 text-3xl font-black">{formatINR(totalRevenue)}</p>
               </div>
               <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
                 <p className="text-sm font-black text-slate-500 dark:text-slate-400">Source</p>
@@ -864,7 +859,7 @@ export function MyCoursesPage() {
                     {course.description || "No description added yet."}
                   </p>
                   <div className="mt-5 grid grid-cols-2 gap-3 text-sm font-black">
-                    <span>${(course.price ?? 0).toLocaleString()}</span>
+                    <span>{formatINR(course.price ?? 0)}</span>
                     <span className="text-right">{course.students?.length ?? 0} students</span>
                   </div>
                   <div className="mt-4"><ProgressBar value={course.lessons?.length ? 70 : 20} /></div>
@@ -1229,7 +1224,10 @@ export function EarningsPage({
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
-                <Tooltip contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }}
+                  formatter={(value) => (typeof value === "number" ? formatINR(value) : value)}
+                />
                 <Bar dataKey="revenue" radius={[14, 14, 0, 0]} fill="#06b6d4" />
               </BarChart>
             </ResponsiveContainer>

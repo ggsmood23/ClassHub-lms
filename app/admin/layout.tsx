@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions, roleRedirectPath } from "@/lib/auth/options";
 import connectDB from "@/lib/db";
 import User from "@/lib/models/User";
+import { getUserNotifications } from "@/lib/notifications";
 import { AdminShell } from "../components/admin/admin-shell";
 
 export default async function AdminLayout({
@@ -17,11 +18,28 @@ export default async function AdminLayout({
 
   await connectDB();
 
-  const user = await User.findOne({ email: session.user.email }).select("role");
+  const user = await User.findOne({ email: session.user.email }).select("name email role");
 
   if (!user || user.role !== "admin") {
     redirect(roleRedirectPath(user?.role));
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  const notifications = await getUserNotifications(user._id);
+
+  return (
+    <AdminShell
+      notifications={notifications.map((notification) => ({
+        id: notification._id.toString(),
+        title: notification.title,
+        message: notification.message,
+        read: Boolean(notification.read),
+      }))}
+      user={{
+        name: user.name || session.user.name || "Class Hub admin",
+        email: user.email || session.user.email,
+      }}
+    >
+      {children}
+    </AdminShell>
+  );
 }

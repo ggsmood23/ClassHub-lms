@@ -94,12 +94,14 @@ export function AdminDataTable<T extends Record<string, string>>({
   rows,
   filterKeys,
   renderRow,
+  renderActions,
   placeholder = "Search records...",
 }: Readonly<{
   headers: string[];
   rows: T[];
   filterKeys: Array<keyof T>;
   renderRow: (row: T) => ReactNode[];
+  renderActions?: (row: T) => ReactNode;
   placeholder?: string;
 }>) {
   const [query, setQuery] = useState("");
@@ -160,21 +162,32 @@ export function AdminDataTable<T extends Record<string, string>>({
             </thead>
             <tbody className="divide-y divide-slate-200/70 dark:divide-white/10">
               {filteredRows.map((row, index) => (
-                <tr key={`${row.name ?? row.title ?? row.item}-${index}`} className="transition hover:bg-cyan-50/55 dark:hover:bg-white/8">
+                <tr key={`${row.id ?? row.name ?? row.title ?? row.item}-${index}`} className="transition hover:bg-cyan-50/55 dark:hover:bg-white/8">
                   {renderRow(row).map((cell, cellIndex) => (
                     <td key={cellIndex} className="px-4 py-4 text-sm font-bold text-slate-600 dark:text-slate-300">{cell}</td>
                   ))}
                   <td className="px-4 py-4">
-                    <button
-                      type="button"
-                      className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white/80 transition hover:border-cyan-300 dark:border-white/10 dark:bg-white/10"
-                      aria-label="Open row actions"
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </button>
+                    {renderActions ? (
+                      renderActions(row)
+                    ) : (
+                      <button
+                        type="button"
+                        className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white/80 transition hover:border-cyan-300 dark:border-white/10 dark:bg-white/10"
+                        aria-label="Open row actions"
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
+              {filteredRows.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-8 text-center text-sm font-black text-slate-500 dark:text-slate-400" colSpan={headers.length + 1}>
+                    No records found.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

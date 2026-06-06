@@ -10,7 +10,9 @@ type NotificationInput = {
     | "course_created"
     | "course_updated"
     | "enrollment_received"
-    | "course_completed";
+    | "course_completed"
+    | "admin_broadcast"
+    | "platform_activity";
 };
 
 export async function createNotification(input: NotificationInput) {

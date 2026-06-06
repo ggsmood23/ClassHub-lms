@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentStudent } from "@/lib/auth/current-user";
+import { getCurrentAdmin, getCurrentStudent } from "@/lib/auth/current-user";
 import Review from "@/lib/models/Review";
 import { toJsonSafe } from "@/lib/serialization";
+
+export const runtime = "nodejs";
 
 type ReviewRouteContext = {
   params: Promise<{
@@ -77,25 +79,29 @@ export async function PUT(request: NextRequest, context: ReviewRouteContext) {
 
 export async function DELETE(_: NextRequest, context: ReviewRouteContext) {
   try {
-    const currentStudent = await getCurrentStudent();
-
-    if ("error" in currentStudent) {
-      return NextResponse.json(
-        { error: currentStudent.error },
-        { status: currentStudent.status },
-      );
-    }
-
     const { id } = await context.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid review id" }, { status: 400 });
     }
 
-    const review = await Review.findOneAndDelete({
-      _id: id,
-      student: currentStudent.user._id,
-    });
+    const currentAdmin = await getCurrentAdmin();
+    const deleteQuery: { _id: string; student?: unknown } = { _id: id };
+
+    if ("error" in currentAdmin) {
+      const currentStudent = await getCurrentStudent();
+
+      if ("error" in currentStudent) {
+        return NextResponse.json(
+          { error: currentAdmin.error },
+          { status: currentAdmin.status },
+        );
+      }
+
+      deleteQuery.student = currentStudent.user._id;
+    }
+
+    const review = await Review.findOneAndDelete(deleteQuery);
 
     if (!review) {
       return NextResponse.json({ error: "Review not found" }, { status: 404 });

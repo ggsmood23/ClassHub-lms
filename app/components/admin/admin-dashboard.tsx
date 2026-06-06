@@ -8,6 +8,7 @@ import {
   Flag,
   GraduationCap,
   LibraryBig,
+  ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -25,23 +26,19 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  activityFeed,
-  approvals,
-  categoryMix,
-  platformGrowth,
-  reports,
-  revenueTrend,
-} from "./admin-data";
+import type { AdminChartRow } from "@/lib/admin";
+import { formatINR } from "@/lib/currency";
 import { AdminDataTable, AdminPanel, AdminStatCard, ClientChartFrame, StatusBadge } from "./admin-ui";
 
 type AdminDashboardStats = {
+  totalUsers: number;
   totalStudents: number;
   totalTeachers: number;
+  totalAdmins: number;
   totalCourses: number;
   totalEnrollments: number;
   totalRevenue: number;
-  totalTransactions: number;
+  totalPayments: number;
 };
 
 type RecentUserRow = {
@@ -76,12 +73,15 @@ type RecentPaymentRow = {
 
 type AdminDashboardProps = {
   stats: AdminDashboardStats;
+  chartRows: AdminChartRow[];
+  categoryMix: Array<{ name: string; value: number }>;
+  recentActivity: Array<[string, string, string]>;
   recentUsers: RecentUserRow[];
   recentCourses: RecentCourseRow[];
   recentPayments: RecentPaymentRow[];
 };
 
-const statIcons = [Users, GraduationCap, LibraryBig, Flag, BadgeDollarSign, CreditCard];
+const statIcons = [Users, Users, GraduationCap, ShieldCheck, LibraryBig, Flag, CreditCard, BadgeDollarSign];
 const pieColors = ["#06b6d4", "#10b981", "#8b5cf6", "#f59e0b", "#f43f5e"];
 
 function formatCount(value: number) {
@@ -90,6 +90,12 @@ function formatCount(value: number) {
 
 function buildAdminStats(stats: AdminDashboardStats) {
   return [
+    {
+      label: "Total users",
+      value: formatCount(stats.totalUsers),
+      change: "All platform accounts",
+      gradient: "from-blue-400 to-indigo-500",
+    },
     {
       label: "Total students",
       value: formatCount(stats.totalStudents),
@@ -101,6 +107,12 @@ function buildAdminStats(stats: AdminDashboardStats) {
       value: formatCount(stats.totalTeachers),
       change: "MongoDB users with teacher role",
       gradient: "from-emerald-400 to-teal-500",
+    },
+    {
+      label: "Total admins",
+      value: formatCount(stats.totalAdmins),
+      change: "Privileged platform operators",
+      gradient: "from-slate-500 to-slate-800",
     },
     {
       label: "Total courses",
@@ -116,13 +128,13 @@ function buildAdminStats(stats: AdminDashboardStats) {
     },
     {
       label: "Total revenue",
-      value: `$${formatCount(stats.totalRevenue)}`,
+      value: formatINR(stats.totalRevenue),
       change: "Successful simulated payments",
       gradient: "from-cyan-400 to-teal-500",
     },
     {
-      label: "Transactions",
-      value: formatCount(stats.totalTransactions),
+      label: "Payments",
+      value: formatCount(stats.totalPayments),
       change: "Payment collection records",
       gradient: "from-blue-400 to-indigo-500",
     },
@@ -131,6 +143,9 @@ function buildAdminStats(stats: AdminDashboardStats) {
 
 export function AdminDashboard({
   stats,
+  chartRows,
+  categoryMix,
+  recentActivity,
   recentUsers,
   recentCourses,
   recentPayments,
@@ -142,7 +157,7 @@ export function AdminDashboard({
       <div className="mx-auto w-full max-w-[104rem] min-w-0 space-y-6 overflow-hidden">
         <AdminHero />
 
-        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {adminStats.map((stat, index) => (
             <AdminStatCard key={stat.label} {...stat} icon={statIcons[index]} />
           ))}
@@ -151,8 +166,8 @@ export function AdminDashboard({
         <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_25rem]">
           <div className="min-w-0 space-y-6">
             <div className="grid gap-6 xl:grid-cols-2">
-              <PlatformChart />
-              <RevenueChart />
+              <PlatformChart data={chartRows} />
+              <RevenueChart data={chartRows} />
             </div>
             <AdminPanel eyebrow="Users" title="Recent users">
               <AdminDataTable
@@ -206,8 +221,8 @@ export function AdminDashboard({
 
           <div className="space-y-6">
             <QuickActions />
-            <CategoryMix />
-            <ActivityFeed />
+            <CategoryMix data={categoryMix} />
+            <ActivityFeed items={recentActivity} />
           </div>
         </div>
       </div>
@@ -244,12 +259,12 @@ function AdminHero() {
   );
 }
 
-export function PlatformChart() {
+export function PlatformChart({ data }: Readonly<{ data: AdminChartRow[] }>) {
   return (
     <AdminPanel eyebrow="Analytics" title="Platform growth">
       <ClientChartFrame>
         <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={288} debounce={80}>
-          <AreaChart data={platformGrowth} margin={{ left: -18, right: 8, top: 8 }}>
+          <AreaChart data={data} margin={{ left: -18, right: 8, top: 8 }}>
             <defs>
               <linearGradient id="adminGrowth" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.34} />
@@ -261,6 +276,7 @@ export function PlatformChart() {
             <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
             <Tooltip contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }} />
             <Area type="monotone" dataKey="students" stroke="#06b6d4" strokeWidth={3} fill="url(#adminGrowth)" />
+            <Area type="monotone" dataKey="teachers" stroke="#10b981" strokeWidth={2} fill="transparent" />
           </AreaChart>
         </ResponsiveContainer>
       </ClientChartFrame>
@@ -268,18 +284,20 @@ export function PlatformChart() {
   );
 }
 
-export function RevenueChart() {
+export function RevenueChart({ data }: Readonly<{ data: AdminChartRow[] }>) {
   return (
     <AdminPanel eyebrow="Revenue" title="Revenue analytics">
       <ClientChartFrame>
         <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={288} debounce={80}>
-          <BarChart data={revenueTrend} margin={{ left: -18, right: 8, top: 8 }}>
+          <BarChart data={data} margin={{ left: -18, right: 8, top: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
             <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
-            <Tooltip contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }} />
-            <Bar dataKey="subscriptions" stackId="a" radius={[0, 0, 0, 0]} fill="#06b6d4" />
-            <Bar dataKey="marketplace" stackId="a" radius={[14, 14, 0, 0]} fill="#10b981" />
+            <Tooltip
+              contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }}
+              formatter={(value) => (typeof value === "number" ? formatINR(value) : value)}
+            />
+            <Bar dataKey="revenue" radius={[14, 14, 0, 0]} fill="#10b981" />
           </BarChart>
         </ResponsiveContainer>
       </ClientChartFrame>
@@ -313,23 +331,23 @@ function QuickActions() {
   );
 }
 
-function CategoryMix() {
+function CategoryMix({ data }: Readonly<{ data: Array<{ name: string; value: number }> }>) {
   return (
     <AdminPanel eyebrow="Catalog" title="Category mix">
       <ClientChartFrame className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={categoryMix} innerRadius={54} outerRadius={88} dataKey="value" paddingAngle={3}>
-              {categoryMix.map((entry, index) => <Cell key={entry.name} fill={pieColors[index]} />)}
+            <Pie data={data} innerRadius={54} outerRadius={88} dataKey="value" paddingAngle={3}>
+              {data.map((entry, index) => <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />)}
             </Pie>
             <Tooltip contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }} />
           </PieChart>
         </ResponsiveContainer>
       </ClientChartFrame>
       <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-black text-slate-500 dark:text-slate-400">
-        {categoryMix.map((item, index) => (
+        {data.map((item, index) => (
           <span key={item.name} className="inline-flex items-center gap-2">
-            <span className="size-2.5 rounded-full" style={{ background: pieColors[index] }} />
+            <span className="size-2.5 rounded-full" style={{ background: pieColors[index % pieColors.length] }} />
             {item.name}
           </span>
         ))}
@@ -338,11 +356,11 @@ function CategoryMix() {
   );
 }
 
-function ActivityFeed() {
+function ActivityFeed({ items }: Readonly<{ items: Array<[string, string, string]> }>) {
   return (
     <AdminPanel eyebrow="Activity" title="Admin feed">
       <div className="space-y-5">
-        {activityFeed.map(([title, helper, time]) => (
+        {items.map(([title, helper, time]) => (
           <div key={title} className="flex gap-4">
             <span className="mt-1 size-2.5 shrink-0 rounded-full bg-cyan-400 shadow-[0_0_0_6px_rgba(34,211,238,0.12)]" />
             <div className="min-w-0">
@@ -358,6 +376,7 @@ function ActivityFeed() {
 }
 
 export function ApprovalQueuePanel() {
+  const approvals: Array<{ title: string; teacher: string; submitted: string; risk: string; price: string; status: string }> = [];
   return (
     <AdminPanel eyebrow="Course approval" title="Pending course submissions">
       <div className="grid gap-4">
@@ -385,6 +404,7 @@ export function ApprovalQueuePanel() {
 }
 
 export function ReportsPanel() {
+  const reports: Array<{ item: string; type: string; reporter: string; priority: string; status: string; time: string }> = [];
   return (
     <AdminPanel eyebrow="Reported content" title="Moderation queue">
       <AdminDataTable

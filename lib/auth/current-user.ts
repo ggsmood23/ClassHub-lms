@@ -27,3 +27,28 @@ export async function getCurrentStudent() {
 
   return { user };
 }
+
+export async function getCurrentAdmin() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    return { error: "Unauthorized", status: 401 as const };
+  }
+
+  await connectDB();
+
+  const user = await User.findOne({ email: session.user.email });
+
+  if (!user) {
+    return { error: "User not found", status: 404 as const };
+  }
+
+  if (user.role !== "admin") {
+    return {
+      error: "Only admins can perform this action",
+      status: 403 as const,
+    };
+  }
+
+  return { user };
+}

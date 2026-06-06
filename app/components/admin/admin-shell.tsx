@@ -19,9 +19,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useState, type ReactNode } from "react";
 import { ThemeToggle } from "../theme-toggle";
-import { notifications } from "./admin-data";
+
+type AdminShellUser = {
+  name: string;
+  email: string;
+};
+
+type AdminShellNotification = {
+  id: string;
+  title: string;
+  message: string;
+  read: boolean;
+};
 
 const navItems = [
   { label: "Dashboard", helper: "Command center", icon: LayoutDashboard, href: "/admin" },
@@ -36,9 +48,31 @@ const navItems = [
   { label: "Settings", helper: "Controls", icon: Settings, href: "/admin/settings" },
 ];
 
-export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
+export function AdminShell({
+  children,
+  notifications,
+  user,
+}: Readonly<{
+  children: ReactNode;
+  notifications: AdminShellNotification[];
+  user: AdminShellUser;
+}>) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+  const initials = user.name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "AD";
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    await signOut({ callbackUrl: "/" });
+  }
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f6f8fb] text-slate-950 dark:bg-[#070b12] dark:text-white">
@@ -110,7 +144,9 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                   aria-label="Open admin notifications"
                 >
                   <Bell className="size-4" />
-                  <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-cyan-400 ring-2 ring-white dark:ring-slate-950" />
+                  {unreadCount > 0 ? (
+                    <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-cyan-400 ring-2 ring-white dark:ring-slate-950" />
+                  ) : null}
                 </button>
                 <AnimatePresence>
                   {isNotificationsOpen ? (
@@ -123,20 +159,25 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                     >
                       <div className="flex items-center justify-between px-2 py-2">
                         <p className="font-black">Admin alerts</p>
-                        <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-black text-cyan-700 dark:bg-cyan-300/10 dark:text-cyan-200">4 new</span>
+                        <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-black text-cyan-700 dark:bg-cyan-300/10 dark:text-cyan-200">{unreadCount} new</span>
                       </div>
                       <div className="mt-2 space-y-2">
                         {notifications.slice(0, 3).map((item) => (
-                          <div key={item.title} className="flex gap-3 rounded-2xl bg-slate-50/80 p-3 dark:bg-white/8">
+                          <div key={item.id} className="flex gap-3 rounded-2xl bg-slate-50/80 p-3 dark:bg-white/8">
                             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-cyan-600 shadow-sm dark:bg-white/10 dark:text-cyan-200">
                               <ShieldCheck className="size-4" />
                             </span>
                             <div>
                               <p className="text-sm font-black">{item.title}</p>
-                              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{item.helper}</p>
+                              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{item.message}</p>
                             </div>
                           </div>
                         ))}
+                        {notifications.length === 0 ? (
+                          <p className="rounded-2xl bg-slate-50/80 p-3 text-sm font-semibold text-slate-500 dark:bg-white/8 dark:text-slate-400">
+                            No admin alerts yet.
+                          </p>
+                        ) : null}
                       </div>
                     </motion.div>
                   ) : null}
@@ -144,10 +185,12 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
               </div>
               <button
                 className="hidden items-center gap-3 rounded-full bg-slate-950 py-1.5 pl-1.5 pr-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-cyan-600 dark:bg-white dark:text-slate-950 sm:inline-flex"
+                disabled={isSigningOut}
+                onClick={handleSignOut}
                 type="button"
               >
-                <span className="grid size-8 place-items-center rounded-full bg-white/12 text-xs dark:bg-slate-950/8">AK</span>
-                Admin Kavya
+                <span className="grid size-8 place-items-center rounded-full bg-white/12 text-xs dark:bg-slate-950/8">{initials}</span>
+                {isSigningOut ? "Signing out..." : user.name}
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import connectDB from "@/lib/db";
 import Payment from "@/lib/models/Payment";
 
 export type RevenuePerCourse = {
@@ -56,6 +57,8 @@ type RecentPaymentDocument = {
 export async function getEducatorRevenueSummary(
   teacherId: unknown,
 ): Promise<EducatorRevenueSummary> {
+  await connectDB();
+
   const revenuePerCourse = await Payment.aggregate<RevenueAggregateRow>([
     { $match: { status: "success" } },
     {

@@ -132,7 +132,7 @@ const providers: NextAuthOptions["providers"] = [
         );
       }
 
-      if (existingUser.emailVerified === false && existingUser.verificationToken) {
+      if (existingUser.emailVerified !== true) {
         throw new Error("Please verify your email before logging in.");
       }
 

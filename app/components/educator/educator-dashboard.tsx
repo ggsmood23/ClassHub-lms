@@ -21,12 +21,13 @@ import {
 } from "recharts";
 import type { EducatorDashboardSummary } from "@/lib/educator-dashboard";
 import type { EducatorRevenueSummary } from "@/lib/payment-analytics";
+import { formatINR } from "@/lib/currency";
 import { ClientChartFrame, EducatorPanel, EducatorStatCard, EducatorTable } from "./educator-ui";
 
 const statIcons = [Users, BookOpenCheck, BadgeDollarSign, BookOpenCheck];
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString()}`;
+  return formatINR(value);
 }
 
 export function EducatorDashboard({
@@ -185,7 +186,10 @@ function EarningsChart({
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
             <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
-            <Tooltip contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }} />
+            <Tooltip
+              contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }}
+              formatter={(value) => (typeof value === "number" ? formatINR(value) : value)}
+            />
             <Bar dataKey="revenue" radius={[14, 14, 0, 0]} fill="#06b6d4" />
           </BarChart>
         </ResponsiveContainer>

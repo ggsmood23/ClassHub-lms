@@ -13,6 +13,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { authOptions } from "@/lib/auth/options";
+import { formatINR } from "@/lib/currency";
 import connectDB from "@/lib/db";
 import Certificate from "@/lib/models/Certificate";
 import Enrollment from "@/lib/models/Enrollment";
@@ -158,7 +159,7 @@ export default async function ProfilePage() {
           <ProfileStat label="Enrolled courses" value={enrollments.length.toString()} icon={BookOpenCheck} />
           <ProfileStat label="Certificates earned" value={certificates.length.toString()} icon={Award} />
           <ProfileStat label="Completion" value={`${averageProgress}%`} icon={Target} />
-          <ProfileStat label="Paid history" value={`$${totalPaid.toLocaleString()}`} icon={CreditCard} />
+          <ProfileStat label="Paid history" value={formatINR(totalPaid)} icon={CreditCard} />
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
@@ -221,7 +222,7 @@ export default async function ProfilePage() {
                     <div key={payment._id.toString()} className="rounded-[1.25rem] bg-slate-50 p-4 text-sm font-semibold dark:bg-white/8">
                       <p className="font-black">{payment.course?.title || "Deleted course"}</p>
                       <p className="mt-1 text-slate-500 dark:text-slate-400">
-                        ${payment.amount?.toLocaleString() ?? "0"} · {payment.status} · {formatDate(payment.createdAt)}
+                        {formatINR(payment.amount ?? 0)} · {payment.status} · {formatDate(payment.createdAt)}
                       </p>
                     </div>
                   ))

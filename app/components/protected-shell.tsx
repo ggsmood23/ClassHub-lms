@@ -8,21 +8,19 @@ import {
   CheckCircle2,
   FileText,
   GraduationCap,
-  Home,
   Inbox,
   LayoutDashboard,
   LogOut,
   Menu,
   Search,
   Settings,
-  Sparkles,
   Trophy,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useState, type ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { useToast } from "./toast-provider";
 
@@ -36,49 +34,24 @@ const navItems = [
   { label: "Settings", helper: "Account", icon: Settings, href: "/dashboard/settings" },
 ];
 
-const notifications = [
-  {
-    title: "Live class starts in 45 minutes",
-    helper: "Design Systems Sprint",
-    icon: CalendarDays,
-  },
-  {
-    title: "Mentor feedback is ready",
-    helper: "Full-Stack Web Apps",
-    icon: CheckCircle2,
-  },
-  {
-    title: "New cohort discussion",
-    helper: "AI Product Design",
-    icon: Sparkles,
-  },
-];
+type StudentNotification = {
+  id: string;
+  title: string;
+  message: string;
+  read: boolean;
+};
 
-export function ProtectedShell({ children }: Readonly<{ children: ReactNode }>) {
-  const [isReady, setIsReady] = useState(false);
+export function ProtectedShell({
+  children,
+  notifications,
+}: Readonly<{
+  children: ReactNode;
+  notifications: StudentNotification[];
+}>) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const router = useRouter();
   const { showToast } = useToast();
-  const { status } = useSession();
-
-  useEffect(() => {
-    if (status === "loading") {
-      return;
-    }
-
-    if (status === "authenticated") {
-      requestAnimationFrame(() => setIsReady(true));
-      return;
-    }
-
-    showToast({
-      title: "Sign in required",
-      message: "Your dashboard is protected.",
-      variant: "info",
-    });
-    router.replace("/login");
-  }, [router, showToast, status]);
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   function handleSignOut() {
     showToast({
@@ -87,10 +60,6 @@ export function ProtectedShell({ children }: Readonly<{ children: ReactNode }>) 
       variant: "success",
     });
     signOut({ callbackUrl: "/" });
-  }
-
-  if (!isReady) {
-    return <DashboardLoadingState />;
   }
 
   return (
@@ -170,7 +139,9 @@ export function ProtectedShell({ children }: Readonly<{ children: ReactNode }>) 
                   aria-label="Open notifications"
                 >
                   <Bell className="size-4" />
-                  <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-cyan-400 ring-2 ring-white dark:ring-slate-950" />
+                  {unreadCount > 0 ? (
+                    <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-cyan-400 ring-2 ring-white dark:ring-slate-950" />
+                  ) : null}
                 </button>
                 <AnimatePresence>
                   {isNotificationsOpen ? (
@@ -184,31 +155,27 @@ export function ProtectedShell({ children }: Readonly<{ children: ReactNode }>) 
                       <div className="flex items-center justify-between px-2 py-2">
                         <p className="font-black">Notifications</p>
                         <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-black text-cyan-700 dark:bg-cyan-300/10 dark:text-cyan-200">
-                          3 new
+                          {unreadCount} new
                         </span>
                       </div>
                       <div className="mt-2 space-y-2">
-                        {notifications.map((notification) => {
-                          const Icon = notification.icon;
-                          return (
-                            <div
-                              key={notification.title}
-                              className="flex gap-3 rounded-2xl bg-slate-50/80 p-3 dark:bg-white/8"
-                            >
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <div key={notification.id} className="flex gap-3 rounded-2xl bg-slate-50/80 p-3 dark:bg-white/8">
                               <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-cyan-600 shadow-sm dark:bg-white/10 dark:text-cyan-200">
-                                <Icon className="size-4" />
+                                <CheckCircle2 className="size-4" />
                               </span>
                               <div>
-                                <p className="text-sm font-black">
-                                  {notification.title}
-                                </p>
-                                <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                  {notification.helper}
-                                </p>
+                                <p className="text-sm font-black">{notification.title}</p>
+                                <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{notification.message}</p>
                               </div>
                             </div>
-                          );
-                        })}
+                          ))
+                        ) : (
+                          <p className="rounded-2xl bg-slate-50/80 p-3 text-sm font-semibold text-slate-500 dark:bg-white/8 dark:text-slate-400">
+                            No notifications yet.
+                          </p>
+                        )}
                       </div>
                     </motion.div>
                   ) : null}
@@ -311,37 +278,5 @@ function DashboardSidebar({
         </div>
       </div>
     </div>
-  );
-}
-
-function DashboardLoadingState() {
-  return (
-    <main className="grid min-h-screen place-items-center bg-slate-50 text-slate-950 dark:bg-[#070b12] dark:text-white">
-      <motion.div
-        className="w-[min(24rem,calc(100vw-2rem))] rounded-[2rem] border border-white/70 bg-white/76 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur-2xl dark:border-white/10 dark:bg-white/10"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex items-center gap-4">
-          <span className="grid size-12 place-items-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950">
-            <Home className="size-5" />
-          </span>
-          <div>
-            <p className="font-black">Preparing Class Hub</p>
-            <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
-              Loading your secure workspace
-            </p>
-          </div>
-        </div>
-        <div className="mt-6 space-y-3">
-          {[0, 1, 2].map((item) => (
-            <div
-              key={item}
-              className="h-3 animate-pulse rounded-full bg-slate-200 dark:bg-white/10"
-            />
-          ))}
-        </div>
-      </motion.div>
-    </main>
   );
 }

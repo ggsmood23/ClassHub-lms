@@ -23,7 +23,14 @@ const NotificationSchema = new Schema(
 
     type: {
       type: String,
-      enum: ["course_created", "course_updated", "enrollment_received", "course_completed"],
+      enum: [
+        "course_created",
+        "course_updated",
+        "enrollment_received",
+        "course_completed",
+        "admin_broadcast",
+        "platform_activity",
+      ],
       required: true,
     },
 

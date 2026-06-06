@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { BarChart3, Clock3, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { formatINR } from "@/lib/currency";
 
 export type CatalogCourse = {
   id: string;
@@ -62,7 +63,7 @@ export function CourseCard({ course }: Readonly<{ course: CatalogCourse }>) {
               {course.difficulty}
             </span>
             <span className="rounded-full bg-slate-950/82 px-3 py-1 text-xs font-black text-white shadow-sm backdrop-blur-xl dark:bg-white/82 dark:text-slate-950">
-              {course.isPaid ? `$${course.price.toLocaleString()}` : "Free"}
+              {course.isPaid ? formatINR(course.price) : "Free"}
             </span>
           </div>
         </div>

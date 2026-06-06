@@ -1,10 +1,24 @@
 import type { Metadata } from "next";
-import { StudentsAdminPage } from "../../components/admin/admin-pages";
+import { getServerSession } from "next-auth/next";
+import { getAdminUsers } from "@/lib/admin";
+import { authOptions } from "@/lib/auth/options";
+import { UsersAdminPage } from "../../components/admin/admin-pages";
 
 export const metadata: Metadata = {
   title: "Students | Class Hub Admin",
 };
 
-export default function Page() {
-  return <StudentsAdminPage />;
+export default async function Page() {
+  const [session, users] = await Promise.all([
+    getServerSession(authOptions),
+    getAdminUsers("student"),
+  ]);
+
+  return (
+    <UsersAdminPage
+      currentAdminId={session?.user?.id || ""}
+      title="Manage students"
+      users={users}
+    />
+  );
 }

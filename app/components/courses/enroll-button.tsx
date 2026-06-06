@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Play } from "lucide-react";
+import { formatINR } from "@/lib/currency";
 
 type EnrollButtonProps = {
   courseId: string;
@@ -89,7 +90,7 @@ export function EnrollButton({
     <div className="space-y-2">
       {isPaid ? (
         <div className="rounded-2xl bg-slate-50 p-4 text-sm font-black text-slate-700 dark:bg-slate-950/80 dark:text-white">
-          Course Price: ${price.toLocaleString()}
+          Course Price: {formatINR(price)}
         </div>
       ) : null}
       <button
