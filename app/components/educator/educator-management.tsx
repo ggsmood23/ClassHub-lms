@@ -789,7 +789,7 @@ export function MyCoursesPage() {
 
   return (
     <PageFrame eyebrow="Course library" title="My courses">
-      <EducatorPanel title="MongoDB courses" eyebrow="Fetched from GET /api/courses">
+      <EducatorPanel title="Course management" eyebrow="My Courses">
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[0, 1, 2, 3].map((item) => (
@@ -812,8 +812,10 @@ export function MyCoursesPage() {
                 <p className="mt-2 text-3xl font-black">{formatINR(totalRevenue)}</p>
               </div>
               <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-                <p className="text-sm font-black text-slate-500 dark:text-slate-400">Source</p>
-                <p className="mt-2 text-3xl font-black">API</p>
+                <p className="text-sm font-black text-slate-500 dark:text-slate-400">Published lessons</p>
+                <p className="mt-2 text-3xl font-black">
+                  {courses.reduce((sum, course) => sum + (course.lessons?.length ?? 0), 0)}
+                </p>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
