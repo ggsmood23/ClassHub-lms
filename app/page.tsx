@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { RoleAwareLogoLink } from "./components/role-aware-logo-link";
 import { ThemeToggle } from "./components/theme-toggle";
 
 const navItems = ["Courses", "Categories", "Testimonials", "Pricing"];
@@ -69,12 +70,12 @@ export default function Home() {
 
       <nav className="sticky top-0 z-50 border-b border-white/50 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <a href="#" className="flex items-center gap-3" aria-label="Class Hub home">
+          <RoleAwareLogoLink className="flex items-center gap-3" aria-label="Class Hub home">
             <span className="grid size-11 place-items-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-cyan-500/20 dark:bg-white dark:text-slate-950">
               CH
             </span>
             <span className="text-xl font-black tracking-tight">Class Hub</span>
-          </a>
+          </RoleAwareLogoLink>
 
           <div className="hidden items-center gap-8 lg:flex">
             {navItems.map((item) => (

@@ -21,6 +21,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState, type ReactNode } from "react";
+import { RoleAwareLogoLink } from "./role-aware-logo-link";
 import { ThemeToggle } from "./theme-toggle";
 import { useToast } from "./toast-provider";
 
@@ -205,7 +206,7 @@ function DashboardSidebar({
 
   return (
     <div className="flex h-full flex-col">
-      <Link href="/" className="flex items-center gap-3 px-2 py-2" onClick={onNavigate}>
+      <RoleAwareLogoLink className="flex items-center gap-3 px-2 py-2" onClick={onNavigate}>
         <span className="grid size-11 place-items-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-cyan-500/20 dark:bg-white dark:text-slate-950">
           CH
         </span>
@@ -215,7 +216,7 @@ function DashboardSidebar({
             Premium learner portal
           </span>
         </span>
-      </Link>
+      </RoleAwareLogoLink>
 
       <div className="mt-8 space-y-1.5">
         {navItems.map((item) => {

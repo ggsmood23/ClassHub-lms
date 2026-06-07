@@ -10,6 +10,7 @@ import Enrollment from "@/lib/models/Enrollment";
 import Review from "@/lib/models/Review";
 import User from "@/lib/models/User";
 import { ThemeToggle } from "../../components/theme-toggle";
+import { RoleAwareLogoLink } from "../../components/role-aware-logo-link";
 import { toJsonSafe } from "@/lib/serialization";
 import {
   MongoCourseDetails,
@@ -133,14 +134,14 @@ export default async function CourseDetailsPage({ params }: CourseDetailsPagePro
   const nav: ReactNode = (
     <nav className="sticky top-0 z-40 border-b border-white/60 bg-white/72 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/62">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-w-0 items-center gap-3">
+        <RoleAwareLogoLink className="flex min-w-0 items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-cyan-500/20 dark:bg-white dark:text-slate-950">
             CH
           </span>
           <span className="truncate text-xl font-black tracking-tight">
             Class Hub
           </span>
-        </Link>
+        </RoleAwareLogoLink>
         <div className="flex items-center gap-3">
           <Link
             href="/courses"

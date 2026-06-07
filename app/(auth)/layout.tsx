@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { RoleAwareLogoLink } from "../components/role-aware-logo-link";
 import { ThemeToggle } from "../components/theme-toggle";
 
 export default function AuthLayout({
@@ -9,12 +9,12 @@ export default function AuthLayout({
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.24),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.22),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(241,245,249,0.96))] dark:bg-[radial-gradient(circle_at_top_left,rgba(45,212,191,0.16),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.18),transparent_34%),linear-gradient(180deg,#070b12,#0f172a)]" />
 
       <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
+        <RoleAwareLogoLink className="flex items-center gap-3">
           <span className="grid size-11 place-items-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-cyan-500/20 dark:bg-white dark:text-slate-950">
             CH
           </span>
           <span className="text-xl font-black tracking-tight">Class Hub</span>
-        </Link>
+        </RoleAwareLogoLink>
         <ThemeToggle />
       </nav>
 
