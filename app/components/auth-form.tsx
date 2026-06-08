@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import { AuthInput } from "./auth-input";
 import { SocialAuthButtons } from "./social-auth-buttons";
 import { useToast } from "./toast-provider";
@@ -67,6 +67,7 @@ export function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
   const availableRoles = isSignup
     ? roles.filter((role) => role.value !== "admin")
     : roles;
+  const selectedOAuthRole = form.role === "teacher" ? "teacher" : "student";
   const canSubmit =
     !isLoading && (!isSignup || passwordValidation.isValid);
 
@@ -210,9 +211,23 @@ export function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
       </div>
 
       {mode !== "forgot" ? (
+        <div className="mt-8">
+          <RoleSelector
+            value={form.role}
+            roles={availableRoles}
+            error={errors.role}
+            disabled={isLoading}
+            onChange={(role) => updateField("role", role)}
+          />
+        </div>
+      ) : null}
+
+      {mode !== "forgot" ? (
         <>
-          <div className="mt-8">
+          <div className="mt-5">
             <SocialAuthButtons
+              mode={mode}
+              selectedRole={selectedOAuthRole}
               onProviderCountChange={handleSocialProviderCountChange}
             />
           </div>
@@ -234,16 +249,6 @@ export function AuthForm({ mode }: Readonly<{ mode: AuthMode }>) {
         className={mode === "forgot" ? "mt-8 space-y-5" : "space-y-5"}
         noValidate
       >
-        {mode !== "forgot" ? (
-          <RoleSelector
-            value={form.role}
-            roles={availableRoles}
-            error={errors.role}
-            disabled={isLoading}
-            onChange={(role) => updateField("role", role)}
-          />
-        ) : null}
-
         {isSignup ? (
           <AuthInput
             label="Full name"
@@ -376,25 +381,37 @@ function RoleSelector({
   disabled: boolean;
   onChange: (role: AuthRole) => void;
 }>) {
+  const selectedIndex = useMemo(
+    () => Math.max(0, roles.findIndex((role) => role.value === value)),
+    [roles, value],
+  );
+  const sliderWidth = `${100 / roles.length}%`;
+  const sliderTransform = `translateX(${selectedIndex * 100}%)`;
+
   return (
     <fieldset>
       <legend className="text-sm font-black text-slate-700 dark:text-slate-200">
         I am a
       </legend>
       <div
-        className={`mt-2 grid rounded-2xl border border-slate-200 bg-white/70 p-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/8 ${
+        className={`relative mt-2 grid overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-1 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/8 ${
           roles.length === 3 ? "grid-cols-3" : "grid-cols-2"
         }`}
       >
+        <span
+          aria-hidden="true"
+          className="absolute bottom-1 top-1 rounded-xl bg-slate-950 shadow-lg shadow-cyan-500/15 transition-transform duration-300 ease-out dark:bg-white"
+          style={{ width: sliderWidth, transform: sliderTransform }}
+        />
         {roles.map((role) => {
           const checked = value === role.value;
 
           return (
             <label
               key={role.value}
-              className={`relative flex h-11 cursor-pointer items-center justify-center rounded-xl text-sm font-black transition ${
+              className={`relative z-10 flex h-11 cursor-pointer items-center justify-center rounded-xl text-sm font-black transition ${
                 checked
-                  ? "bg-slate-950 text-white shadow-lg shadow-cyan-500/15 dark:bg-white dark:text-slate-950"
+                  ? "text-white dark:text-slate-950"
                   : "text-slate-500 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
               } ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
             >
@@ -444,7 +461,7 @@ function PasswordRequirementList({
                   : "bg-slate-100 text-slate-400 dark:bg-white/10 dark:text-slate-400"
               }`}
             >
-              {check.passed ? "✓" : "•"}
+              {check.passed ? "OK" : "-"}
             </span>
             <span>{check.label}</span>
           </li>

@@ -19,8 +19,12 @@ export default async function EducatorLayout({
   await connectDB();
 
   const user = await User.findOne({ email: session.user.email }).select(
-    "name email image role",
+    "name email image role accountStatus",
   );
+
+  if (user?.accountStatus === "suspended") {
+    redirect("/");
+  }
 
   if (!user || normalizeRole(user.role) !== "teacher") {
     redirect(roleRedirectPath(user?.role));

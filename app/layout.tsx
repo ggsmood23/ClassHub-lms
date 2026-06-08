@@ -16,6 +16,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full antialiased">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+  try {
+    const storedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldUseDark = storedTheme === "dark" || (!storedTheme && prefersDark);
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+  } catch {
+    document.documentElement.classList.remove("dark");
+  }
+})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <AuthSessionProvider>
           <ToastProvider>{children}</ToastProvider>

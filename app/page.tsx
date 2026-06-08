@@ -1,5 +1,6 @@
 "use client";
 
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { RoleAwareLogoLink } from "./components/role-aware-logo-link";
@@ -95,7 +96,7 @@ export default function Home() {
               href="/login"
               className="rounded-full border border-slate-200 bg-white/75 px-5 py-3 text-sm font-bold text-slate-700 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-cyan-300 dark:border-white/10 dark:bg-white/10 dark:text-white"
             >
-              Log in
+              Sign in
             </Link>
             <Link
               href="/signup"
@@ -111,7 +112,7 @@ export default function Home() {
             type="button"
             aria-label="Toggle navigation"
           >
-            <span className="text-xl leading-none">{isMenuOpen ? "x" : "="}</span>
+            {isMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
 
@@ -139,7 +140,7 @@ export default function Home() {
                 onClick={() => setIsMenuOpen(false)}
                 className="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
               >
-                Log in
+                Sign in
               </Link>
               <Link
                 href="/signup"

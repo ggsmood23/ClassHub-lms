@@ -18,7 +18,11 @@ export default async function AdminLayout({
 
   await connectDB();
 
-  const user = await User.findOne({ email: session.user.email }).select("name email role");
+  const user = await User.findOne({ email: session.user.email }).select("name email role accountStatus");
+
+  if (user?.accountStatus === "suspended") {
+    redirect("/");
+  }
 
   if (!user || user.role !== "admin") {
     redirect(roleRedirectPath(user?.role));

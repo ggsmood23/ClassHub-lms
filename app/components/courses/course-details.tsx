@@ -139,21 +139,20 @@ export function CourseDetails({
               <div className="grid gap-3 md:grid-cols-2">
                 {course.resources.length > 0 ? (
                   course.resources.map((resource) => (
-                    <a
+                    <div
                       key={resource.title}
-                      href="#"
-                      className="group flex items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-white/74 p-4 transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-xl hover:shadow-cyan-500/10 dark:border-white/10 dark:bg-white/8"
+                      className="flex items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-white/74 p-4 dark:border-white/10 dark:bg-white/8"
                     >
                       <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                        <Download className="size-4 transition group-hover:text-cyan-600 dark:group-hover:text-cyan-200" />
+                        <Download className="size-4" />
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-black">{resource.title}</span>
                         <span className="mt-1 block text-xs font-bold text-slate-500 dark:text-slate-400">
-                          {resource.type} - {resource.size}
+                          {resource.type} - {resource.size} - Available after enrollment
                         </span>
                       </span>
-                    </a>
+                    </div>
                   ))
                 ) : (
                   <EmptyPanel title="No resources yet" description="Downloads will appear here when the course opens." />

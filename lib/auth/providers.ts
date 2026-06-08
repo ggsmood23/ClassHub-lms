@@ -36,6 +36,10 @@ const roleLabels = {
 type AuthRole = keyof typeof roleLabels;
 
 function parseRole(role: string | undefined): AuthRole | null {
+  if (role === "educator") {
+    return "teacher";
+  }
+
   if (role === "admin" || role === "student" || role === "teacher") {
     return role;
   }

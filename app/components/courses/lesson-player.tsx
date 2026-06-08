@@ -145,10 +145,9 @@ export function LessonPlayer({
             <GlassPanel icon={Download} eyebrow="Downloads" title="Resources">
               <div className="space-y-3">
                 {course.resources.map((resource) => (
-                  <a
+                  <div
                     key={resource.title}
-                    href="#"
-                    className="group flex items-center gap-3 rounded-[1.15rem] border border-slate-200 bg-white/74 p-3 transition hover:-translate-y-0.5 hover:border-cyan-300 dark:border-white/10 dark:bg-white/8"
+                    className="flex items-center gap-3 rounded-[1.15rem] border border-slate-200 bg-white/74 p-3 dark:border-white/10 dark:bg-white/8"
                   >
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300">
                       <FileText className="size-4" />
@@ -156,11 +155,11 @@ export function LessonPlayer({
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-black">{resource.title}</span>
                       <span className="mt-1 block text-xs font-bold text-slate-500 dark:text-slate-400">
-                        {resource.type} - {resource.size}
+                        {resource.type} - {resource.size} - Course file
                       </span>
                     </span>
-                    <Download className="size-4 shrink-0 text-slate-300 transition group-hover:text-cyan-600 dark:group-hover:text-cyan-200" />
-                  </a>
+                    <Download className="size-4 shrink-0 text-slate-300" />
+                  </div>
                 ))}
               </div>
             </GlassPanel>

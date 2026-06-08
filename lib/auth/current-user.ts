@@ -18,6 +18,10 @@ export async function getCurrentStudent() {
     return { error: "User not found", status: 404 as const };
   }
 
+  if (user.accountStatus === "suspended") {
+    return { error: "Account suspended", status: 403 as const };
+  }
+
   if (user.role !== "student") {
     return {
       error: "Only logged-in students can perform this action",
@@ -41,6 +45,10 @@ export async function getCurrentAdmin() {
 
   if (!user) {
     return { error: "User not found", status: 404 as const };
+  }
+
+  if (user.accountStatus === "suspended") {
+    return { error: "Account suspended", status: 403 as const };
   }
 
   if (user.role !== "admin") {
