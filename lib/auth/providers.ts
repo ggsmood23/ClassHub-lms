@@ -122,6 +122,10 @@ const providers: NextAuthOptions["providers"] = [
         return null;
       }
 
+      if (existingUser.accountStatus === "suspended") {
+        throw new Error("This account is suspended. Contact an administrator for help.");
+      }
+
       if (!passwordsMatch(password, email, existingUser.passwordHash)) {
         return null;
       }

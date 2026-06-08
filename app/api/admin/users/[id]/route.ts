@@ -11,9 +11,14 @@ type UserRouteContext = {
 };
 
 const roles = ["student", "teacher", "admin"] as const;
+const accountStatuses = ["active", "suspended"] as const;
 
 function isRole(value: unknown): value is (typeof roles)[number] {
   return typeof value === "string" && roles.includes(value as (typeof roles)[number]);
+}
+
+function isAccountStatus(value: unknown): value is (typeof accountStatuses)[number] {
+  return typeof value === "string" && accountStatuses.includes(value as (typeof accountStatuses)[number]);
 }
 
 export async function PATCH(request: Request, context: UserRouteContext) {
@@ -36,27 +41,51 @@ export async function PATCH(request: Request, context: UserRouteContext) {
       );
     }
 
-    const body = (await request.json()) as { role?: unknown };
+    const body = (await request.json()) as { role?: unknown; accountStatus?: unknown };
 
-    if (!isRole(body.role)) {
+    if (body.role !== undefined && !isRole(body.role)) {
       return NextResponse.json(
         { success: false, message: "Role must be student, teacher, or admin" },
         { status: 400 },
       );
     }
 
-    if (String(currentAdmin.user._id) === id && body.role !== "admin") {
+    if (body.accountStatus !== undefined && !isAccountStatus(body.accountStatus)) {
+      return NextResponse.json(
+        { success: false, message: "Account status must be active or suspended" },
+        { status: 400 },
+      );
+    }
+
+    if (body.role === undefined && body.accountStatus === undefined) {
+      return NextResponse.json(
+        { success: false, message: "No user changes provided" },
+        { status: 400 },
+      );
+    }
+
+    if (String(currentAdmin.user._id) === id && body.role !== undefined && body.role !== "admin") {
       return NextResponse.json(
         { success: false, message: "Admins cannot demote their own account" },
         { status: 400 },
       );
     }
 
+    if (String(currentAdmin.user._id) === id && body.accountStatus === "suspended") {
+      return NextResponse.json(
+        { success: false, message: "Admins cannot suspend their own account" },
+        { status: 400 },
+      );
+    }
+
     const user = await User.findByIdAndUpdate(
       id,
-      { role: body.role },
+      {
+        ...(body.role !== undefined ? { role: body.role } : {}),
+        ...(body.accountStatus !== undefined ? { accountStatus: body.accountStatus } : {}),
+      },
       { new: true, runValidators: true },
-    ).select("_id name email role");
+    ).select("_id name email role accountStatus");
 
     if (!user) {
       return NextResponse.json(

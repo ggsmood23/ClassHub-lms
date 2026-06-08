@@ -91,7 +91,7 @@ async function getCatalogCourses(): Promise<CatalogCourse[]> {
     ]),
   );
 
-  const courses = await Course.find()
+  const courses = await Course.find({ status: "Published" })
     .populate("teacher", "name email role")
     .sort({ createdAt: -1 })
     .lean<CourseDocument[]>();

@@ -62,6 +62,10 @@ async function syncOAuthUser({
   let dbUser = await User.findOne({ email });
 
   if (dbUser) {
+    if (dbUser.accountStatus === "suspended") {
+      return false;
+    }
+
     dbUser.emailVerified = true;
     dbUser.verificationToken = undefined;
     dbUser.verificationTokenExpires = undefined;

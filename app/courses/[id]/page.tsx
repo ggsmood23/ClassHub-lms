@@ -70,6 +70,14 @@ export default async function CourseDetailsPage({ params }: CourseDetailsPagePro
     notFound();
   }
 
+  const canManageCourse =
+    user?.role === "admin" ||
+    (user?.role === "teacher" && course.teacher?.toString() === user._id.toString());
+
+  if ((course.status || "Published") !== "Published" && !canManageCourse) {
+    notFound();
+  }
+
   const [reviewStats] = await Review.aggregate<ReviewAggregate>([
     { $match: { course: course._id } },
     {

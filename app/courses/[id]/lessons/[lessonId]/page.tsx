@@ -62,6 +62,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
     (user.role === "teacher" &&
       course.teacher?.toString() === user._id.toString());
 
+  if ((course.status || "Published") !== "Published" && !canManageCourse) {
+    notFound();
+  }
+
   if (!canManageCourse) {
     const enrollment = await Enrollment.findOne({
       student: user._id,

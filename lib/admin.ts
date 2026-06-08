@@ -22,6 +22,7 @@ export type AdminUserRow = {
   name: string;
   email: string;
   role: "student" | "teacher" | "admin";
+  accountStatus: "active" | "suspended";
   status: string;
   joined: string;
   courses: string;
@@ -206,7 +207,7 @@ export async function getAdminUsers(role?: "student" | "teacher" | "admin", limi
   await connectDB();
 
   const users = await User.find(role ? { role } : {})
-    .select("_id name email role emailVerified createdAt")
+    .select("_id name email role accountStatus emailVerified createdAt")
     .sort({ createdAt: -1 })
     .limit(limit)
     .lean<Array<{
@@ -214,6 +215,7 @@ export async function getAdminUsers(role?: "student" | "teacher" | "admin", limi
       name?: string;
       email?: string;
       role?: "student" | "teacher" | "admin";
+      accountStatus?: "active" | "suspended";
       emailVerified?: boolean;
       createdAt?: Date;
     }>>();
@@ -235,7 +237,15 @@ export async function getAdminUsers(role?: "student" | "teacher" | "admin", limi
         name: user.name || "Unnamed user",
         email: user.email || "No email",
         role: user.role || "student",
-        status: user.role === "admin" ? "Verified" : user.emailVerified ? "Active" : "Pending",
+        accountStatus: user.accountStatus || "active",
+        status:
+          user.accountStatus === "suspended"
+            ? "Suspended"
+            : user.role === "admin"
+              ? "Verified"
+              : user.emailVerified
+                ? "Active"
+                : "Pending",
         joined: formatDate(user.createdAt),
         courses: String(courseCount),
         spend: formatMoney(paymentTotal[0]?.total ?? 0),
@@ -250,7 +260,7 @@ export async function getAdminCourses(limit = 100): Promise<AdminCourseRow[]> {
   await connectDB();
 
   const courses = await Course.find()
-    .select("_id title category level teacher students createdAt")
+    .select("_id title category level status teacher students createdAt")
     .populate("teacher", "name email")
     .sort({ createdAt: -1 })
     .limit(limit)
@@ -259,6 +269,7 @@ export async function getAdminCourses(limit = 100): Promise<AdminCourseRow[]> {
       title?: string;
       category?: string;
       level?: string;
+      status?: string;
       teacher?: { name?: string; email?: string } | null;
       students?: unknown[];
       createdAt?: Date;
@@ -278,7 +289,7 @@ export async function getAdminCourses(limit = 100): Promise<AdminCourseRow[]> {
     level: course.level || "Unassigned",
     students: String(course.students?.length ?? 0),
     revenue: formatMoney(revenueByCourse.get(course._id.toString()) ?? 0),
-    status: "Published",
+    status: course.status || "Published",
     created: formatDate(course.createdAt),
   }));
 }

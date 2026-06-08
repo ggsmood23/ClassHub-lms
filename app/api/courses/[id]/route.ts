@@ -28,6 +28,7 @@ type CourseInput = {
   isPaid?: boolean;
   category?: string;
   level?: "Beginner" | "Intermediate" | "Advanced";
+  status?: "Draft" | "Review" | "Published" | "Unpublished" | "Rejected";
   teacher?: string;
   lessons?: Array<{
     title?: string;
@@ -63,6 +64,7 @@ function buildCoursePayload(input: CourseInput): CourseUpdatePayload {
     isPaid: input.isPaid ?? (price === undefined ? undefined : price > 0),
     category: input.category,
     level: input.level,
+    status: input.status,
     teacher: input.teacher,
     lessons: input.lessons,
     students: input.students,
@@ -138,6 +140,10 @@ export async function PUT(request: Request, context: CourseRouteContext) {
     }
 
     const payload = buildCoursePayload(body as CourseInput);
+    if (manager.user.role !== "admin") {
+      delete payload.status;
+    }
+
     delete payload.teacher;
     delete payload.students;
 

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, MoreHorizontal, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
@@ -80,9 +81,9 @@ export function StatusBadge({ status }: Readonly<{ status: string }>) {
   const tone =
     status === "Published" || status === "Active" || status === "Verified" || status === "Resolved"
       ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-300/10 dark:text-emerald-200"
-      : status === "Pending" || status === "Review" || status === "Changes requested"
+      : status === "Pending" || status === "Review" || status === "Draft" || status === "Changes requested"
         ? "bg-amber-50 text-amber-700 dark:bg-amber-300/10 dark:text-amber-200"
-        : status === "High" || status === "Open" || status === "At risk"
+        : status === "High" || status === "Open" || status === "At risk" || status === "Suspended" || status === "Rejected" || status === "Unpublished"
           ? "bg-rose-50 text-rose-700 dark:bg-rose-300/10 dark:text-rose-200"
           : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300";
 
@@ -170,13 +171,7 @@ export function AdminDataTable<T extends Record<string, string>>({
                     {renderActions ? (
                       renderActions(row)
                     ) : (
-                      <button
-                        type="button"
-                        className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white/80 transition hover:border-cyan-300 dark:border-white/10 dark:bg-white/10"
-                        aria-label="Open row actions"
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </button>
+                      <span className="text-xs font-black text-slate-400">View only</span>
                     )}
                   </td>
                 </tr>
@@ -193,6 +188,62 @@ export function AdminDataTable<T extends Record<string, string>>({
         </div>
       </div>
     </div>
+  );
+}
+
+export type AdminRowAction = {
+  label: string;
+  href?: string;
+  onSelect?: () => void;
+  disabled?: boolean;
+  destructive?: boolean;
+};
+
+export function AdminRowActionMenu({
+  label = "Open row actions",
+  actions,
+}: Readonly<{
+  label?: string;
+  actions: AdminRowAction[];
+}>) {
+  return (
+    <details className="group relative inline-block">
+      <summary
+        aria-label={label}
+        className="grid size-9 cursor-pointer list-none place-items-center rounded-full border border-slate-200 bg-white/80 transition hover:border-cyan-300 group-open:border-cyan-300 dark:border-white/10 dark:bg-white/10 [&::-webkit-details-marker]:hidden"
+      >
+        <MoreHorizontal className="size-4" />
+      </summary>
+      <div className="absolute right-0 z-30 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-900/15 dark:border-white/10 dark:bg-slate-950">
+        {actions.map((action) => {
+          const className = `block w-full rounded-xl px-3 py-2 text-left text-xs font-black transition ${
+            action.destructive
+              ? "text-rose-600 hover:bg-rose-50 dark:text-rose-200 dark:hover:bg-rose-300/10"
+              : "text-slate-600 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-cyan-200"
+          } ${action.disabled ? "pointer-events-none opacity-45" : ""}`;
+
+          if (action.href) {
+            return (
+              <Link key={action.label} className={className} href={action.href}>
+                {action.label}
+              </Link>
+            );
+          }
+
+          return (
+            <button
+              key={action.label}
+              className={className}
+              disabled={action.disabled}
+              onClick={action.onSelect}
+              type="button"
+            >
+              {action.label}
+            </button>
+          );
+        })}
+      </div>
+    </details>
   );
 }
 

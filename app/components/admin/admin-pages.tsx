@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LockKeyhole, Mail, ShieldCheck, SlidersHorizontal, Trash2, Users } from "lucide-react";
+import { Bell, LockKeyhole, Mail, ShieldCheck, SlidersHorizontal, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type {
@@ -11,8 +11,8 @@ import type {
   AdminReviewRow,
   AdminUserRow,
 } from "@/lib/admin";
-import { PlatformChart, ReportsPanel, RevenueChart } from "./admin-dashboard";
-import { AdminDataTable, AdminPageFrame, AdminPanel, StatusBadge, inputClass } from "./admin-ui";
+import { PlatformChart, RevenueChart } from "./admin-dashboard";
+import { AdminDataTable, AdminPageFrame, AdminPanel, AdminRowActionMenu, StatusBadge, inputClass } from "./admin-ui";
 
 const securityControls = [
   [ShieldCheck, "Require two-factor login"],
@@ -152,19 +152,38 @@ export function RevenueAdminPage({
             row.date,
             <StatusBadge key={row.status} status={row.status} />,
           ]}
+          renderActions={(row) => <PaymentActions payment={row} />}
         />
       </AdminPanel>
     </AdminPageFrame>
   );
 }
 
-export function ApprovalsAdminPage() {
+export function ApprovalsAdminPage({
+  courses,
+}: Readonly<{ courses: AdminCourseRow[] }>) {
+  const approvalCourses = courses.filter((course) =>
+    ["Draft", "Review", "Unpublished", "Rejected"].includes(course.status),
+  );
+
   return (
     <AdminPageFrame eyebrow="Course approval system" title="Approve course submissions">
       <AdminPanel eyebrow="Course approval" title="Pending course submissions">
-        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-          Course approval workflow is not modeled in the current database schema. Published course moderation is available from Courses.
-        </p>
+        <AdminDataTable
+          headers={["Course", "Teacher", "Category", "Students", "Revenue", "Status"]}
+          rows={approvalCourses}
+          filterKeys={["title", "teacher", "category", "status"]}
+          placeholder="Search submissions..."
+          renderRow={(row) => [
+            <span key={row.title} className="font-black text-slate-950 dark:text-white">{row.title}</span>,
+            row.teacher,
+            row.category,
+            row.students,
+            row.revenue,
+            <StatusBadge key={row.status} status={row.status} />,
+          ]}
+          renderActions={(row) => <CourseActions course={row} approvalMode />}
+        />
       </AdminPanel>
     </AdminPageFrame>
   );
@@ -192,7 +211,6 @@ export function ReportsAdminPage({
           renderActions={(row) => <ReviewActions review={row} />}
         />
       </AdminPanel>
-      <ReportsPanel />
     </AdminPageFrame>
   );
 }
@@ -284,15 +302,14 @@ function UserRoleControl({
   const [role, setRole] = useState(user.role);
   const [isSaving, setIsSaving] = useState(false);
 
-  async function handleChange(nextRole: "student" | "teacher" | "admin") {
-    setRole(nextRole);
+  async function updateUser(payload: { role?: "student" | "teacher" | "admin"; accountStatus?: "active" | "suspended" }) {
     setIsSaving(true);
 
     try {
       const response = await fetch(`/api/admin/users/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: nextRole }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -308,50 +325,120 @@ function UserRoleControl({
     }
   }
 
+  async function handleChange(nextRole: "student" | "teacher" | "admin") {
+    setRole(nextRole);
+    await updateUser({ role: nextRole });
+  }
+
+  const isSelf = user.id === currentAdminId;
+  const isSuspended = user.accountStatus === "suspended";
+
   return (
-    <select
-      aria-label={`Change role for ${user.name}`}
-      className="rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-xs font-black text-slate-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
-      disabled={isSaving || user.id === currentAdminId}
-      onChange={(event) => handleChange(event.target.value as "student" | "teacher" | "admin")}
-      value={role}
-    >
-      <option value="student">Student</option>
-      <option value="teacher">Teacher</option>
-      <option value="admin">Admin</option>
-    </select>
+    <div className="flex items-center gap-2">
+      <select
+        aria-label={`Change role for ${user.name}`}
+        className="rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-xs font-black text-slate-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
+        disabled={isSaving || isSelf}
+        onChange={(event) => handleChange(event.target.value as "student" | "teacher" | "admin")}
+        value={role}
+      >
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+      <AdminRowActionMenu
+        label={`Open actions for ${user.name}`}
+        actions={[
+          { label: "View", href: `/admin/users/${user.id}` },
+          {
+            label: isSuspended ? "Activate" : "Suspend",
+            disabled: isSaving || isSelf,
+            destructive: !isSuspended,
+            onSelect: () => updateUser({ accountStatus: isSuspended ? "active" : "suspended" }),
+          },
+        ]}
+      />
+    </div>
   );
 }
 
-function CourseActions({ course }: Readonly<{ course: AdminCourseRow }>) {
+function CourseActions({
+  approvalMode = false,
+  course,
+}: Readonly<{ approvalMode?: boolean; course: AdminCourseRow }>) {
   const router = useRouter();
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
+
+  async function updateCourseStatus(status: "Draft" | "Review" | "Published" | "Unpublished" | "Rejected") {
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/courses/${course.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to update course");
+      }
+
+      router.refresh();
+    } finally {
+      setIsBusy(false);
+    }
+  }
 
   async function deleteCourse() {
     if (!window.confirm(`Delete ${course.title}? This removes enrollments, payments, reviews, assignments, and certificates for this course.`)) {
       return;
     }
 
-    setIsDeleting(true);
+    setIsBusy(true);
     const response = await fetch(`/api/courses/${course.id}`, { method: "DELETE" });
 
     if (response.ok) {
       router.refresh();
     }
 
-    setIsDeleting(false);
+    setIsBusy(false);
   }
 
+  const isPublished = course.status === "Published";
+
   return (
-    <button
-      aria-label={`Delete ${course.title}`}
-      className="grid size-9 place-items-center rounded-full border border-rose-200 bg-white/80 text-rose-600 transition hover:border-rose-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-300/20 dark:bg-white/10 dark:text-rose-200"
-      disabled={isDeleting}
-      onClick={deleteCourse}
-      type="button"
-    >
-      <Trash2 className="size-4" />
-    </button>
+    <AdminRowActionMenu
+      label={`Open actions for ${course.title}`}
+      actions={[
+        { label: "View", href: `/courses/${course.id}` },
+        { label: "Edit", href: `/admin/courses/${course.id}` },
+        ...(approvalMode
+          ? [
+              { label: "Approve", disabled: isBusy, onSelect: () => updateCourseStatus("Published") },
+              { label: "Reject", disabled: isBusy, destructive: true, onSelect: () => updateCourseStatus("Rejected") },
+            ]
+          : [
+              {
+                label: isPublished ? "Unpublish" : "Publish",
+                disabled: isBusy,
+                onSelect: () => updateCourseStatus(isPublished ? "Unpublished" : "Published"),
+              },
+            ]),
+        { label: "Delete", disabled: isBusy, destructive: true, onSelect: deleteCourse },
+      ]}
+    />
+  );
+}
+
+function PaymentActions({ payment }: Readonly<{ payment: AdminPaymentRow }>) {
+  return (
+    <AdminRowActionMenu
+      label={`Open actions for payment ${payment.transactionId}`}
+      actions={[
+        { label: "View", href: `/admin/payments/${payment.id}` },
+      ]}
+    />
   );
 }
 
@@ -375,15 +462,13 @@ function ReviewActions({ review }: Readonly<{ review: AdminReviewRow }>) {
   }
 
   return (
-    <button
-      aria-label="Remove review"
-      className="grid size-9 place-items-center rounded-full border border-rose-200 bg-white/80 text-rose-600 transition hover:border-rose-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-300/20 dark:bg-white/10 dark:text-rose-200"
-      disabled={isDeleting}
-      onClick={deleteReview}
-      type="button"
-    >
-      <Trash2 className="size-4" />
-    </button>
+    <AdminRowActionMenu
+      label="Open review actions"
+      actions={[
+        { label: "View", href: `/admin/reports/${review.id}` },
+        { label: "Delete", disabled: isDeleting, destructive: true, onSelect: deleteReview },
+      ]}
+    />
   );
 }
 

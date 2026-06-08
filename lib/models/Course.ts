@@ -45,6 +45,12 @@ const CourseSchema = new Schema(
       default: "Beginner",
     },
 
+    status: {
+      type: String,
+      enum: ["Draft", "Review", "Published", "Unpublished", "Rejected"],
+      default: "Published",
+    },
+
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
