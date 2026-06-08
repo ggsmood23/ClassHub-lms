@@ -98,7 +98,7 @@ export function AnalyticsAdminPage({
       <div className="grid gap-4 md:grid-cols-3">
         {metrics.map(([label, value, helper]) => (
           <AdminPanel key={label}>
-            <p className="text-sm font-black text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="text-sm font-black text-slate-700 dark:text-slate-400">{label}</p>
             <p className="mt-3 text-4xl font-black tracking-tight">{value}</p>
             <p className="mt-4 text-sm font-black text-cyan-700 dark:text-cyan-200">{helper}</p>
           </AdminPanel>
@@ -132,7 +132,7 @@ export function RevenueAdminPage({
                   <p className="font-black">{label}</p>
                   <p className="text-lg font-black">{value}</p>
                 </div>
-                <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{helper}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-400">{helper}</p>
               </div>
             ))}
           </div>
@@ -283,7 +283,7 @@ export function NotificationsAdminPage({
               <article key={item.title} className="rounded-[1.5rem] border border-slate-200/70 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
                 <Bell className="size-5 text-cyan-600 dark:text-cyan-200" />
                 <h3 className="mt-4 font-black">{item.title}</h3>
-                <p className="mt-2 text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">{item.message}</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-400">{item.message}</p>
                 <div className="mt-4"><StatusBadge status={item.tone} /></div>
               </article>
             ))}
@@ -584,21 +584,21 @@ export function SettingsAdminPage() {
         <AdminPanel eyebrow="Admin profile" title="Profile and permissions">
           <div className="grid gap-5 md:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-black text-slate-600 dark:text-slate-300">Display name</span>
+              <span className="text-sm font-black text-slate-700 dark:text-slate-300">Display name</span>
               <input className={`${inputClass} mt-2`} placeholder="Managed from your account profile" disabled />
             </label>
             <label className="block">
-              <span className="text-sm font-black text-slate-600 dark:text-slate-300">Email</span>
+              <span className="text-sm font-black text-slate-700 dark:text-slate-300">Email</span>
               <input className={`${inputClass} mt-2`} placeholder="Managed from your account profile" disabled />
             </label>
             <label className="block">
-              <span className="text-sm font-black text-slate-600 dark:text-slate-300">Role</span>
+              <span className="text-sm font-black text-slate-700 dark:text-slate-300">Role</span>
               <select className={`${inputClass} mt-2`} defaultValue="Admin" disabled>
                 <option>Admin</option>
               </select>
             </label>
             <label className="block">
-              <span className="text-sm font-black text-slate-600 dark:text-slate-300">Approval threshold</span>
+              <span className="text-sm font-black text-slate-700 dark:text-slate-300">Approval threshold</span>
               <select className={`${inputClass} mt-2`} defaultValue="Manual for all paid courses">
                 <option>Manual for all paid courses</option>
                 <option>Manual for flagged courses</option>

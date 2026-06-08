@@ -62,7 +62,7 @@ export function AdminStatCard({
       <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${gradient}`} />
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-black text-slate-500 dark:text-slate-400">{label}</p>
+          <p className="text-sm font-black text-slate-700 dark:text-slate-400">{label}</p>
           <p className="mt-3 text-4xl font-black tracking-tight">{value}</p>
         </div>
         <span className={`grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg shadow-cyan-500/15`}>
@@ -85,7 +85,7 @@ export function StatusBadge({ status }: Readonly<{ status: string }>) {
         ? "bg-amber-50 text-amber-700 dark:bg-amber-300/10 dark:text-amber-200"
         : status === "High" || status === "Open" || status === "At risk" || status === "Suspended" || status === "Rejected" || status === "Unpublished"
           ? "bg-rose-50 text-rose-700 dark:bg-rose-300/10 dark:text-rose-200"
-          : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300";
+          : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300";
 
   return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tone}`}>{status}</span>;
 }
@@ -123,10 +123,10 @@ export function AdminDataTable<T extends Record<string, string>>({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <label className="flex h-11 w-full items-center gap-3 rounded-full border border-slate-200 bg-white/72 px-4 text-sm font-semibold text-slate-500 dark:border-white/10 dark:bg-white/10 md:max-w-md">
+        <label className="flex h-11 w-full items-center gap-3 rounded-full border border-slate-200 bg-white/72 px-4 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-slate-400 md:max-w-md">
           <Search className="size-4" />
           <input
-            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-400"
+            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-600 dark:placeholder:text-slate-400"
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}
             value={query}
@@ -139,7 +139,7 @@ export function AdminDataTable<T extends Record<string, string>>({
               className={`shrink-0 rounded-full px-4 py-2 text-xs font-black transition ${
                 status === item
                   ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
-                  : "border border-slate-200 bg-white/64 text-slate-600 hover:border-cyan-300 dark:border-white/10 dark:bg-white/8 dark:text-slate-300"
+                  : "border border-slate-200 bg-white/64 text-slate-700 hover:border-cyan-300 dark:border-white/10 dark:bg-white/8 dark:text-slate-300"
               }`}
               onClick={() => setStatus(item)}
               type="button"
@@ -153,7 +153,7 @@ export function AdminDataTable<T extends Record<string, string>>({
       <div className="overflow-hidden rounded-[1.5rem] border border-slate-200/70 bg-white/58 dark:border-white/10 dark:bg-white/5">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[56rem] text-left">
-            <thead className="bg-slate-50/90 text-xs font-black uppercase tracking-[0.16em] text-slate-400 dark:bg-white/8">
+            <thead className="bg-slate-50/90 text-xs font-black uppercase tracking-[0.16em] text-slate-700 dark:bg-white/8 dark:text-slate-400">
               <tr>
                 {headers.map((header) => (
                   <th key={header} className="px-4 py-4">{header}</th>
@@ -165,20 +165,20 @@ export function AdminDataTable<T extends Record<string, string>>({
               {filteredRows.map((row, index) => (
                 <tr key={`${row.id ?? row.name ?? row.title ?? row.item}-${index}`} className="transition hover:bg-cyan-50/55 dark:hover:bg-white/8">
                   {renderRow(row).map((cell, cellIndex) => (
-                    <td key={cellIndex} className="px-4 py-4 text-sm font-bold text-slate-600 dark:text-slate-300">{cell}</td>
+                    <td key={cellIndex} className="px-4 py-4 text-sm font-bold text-slate-700 dark:text-slate-300">{cell}</td>
                   ))}
                   <td className="px-4 py-4">
                     {renderActions ? (
                       renderActions(row)
                     ) : (
-                      <span className="text-xs font-black text-slate-400">View only</span>
+                      <span className="text-xs font-black text-slate-700 dark:text-slate-400">View only</span>
                     )}
                   </td>
                 </tr>
               ))}
               {filteredRows.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-8 text-center text-sm font-black text-slate-500 dark:text-slate-400" colSpan={headers.length + 1}>
+                  <td className="px-4 py-8 text-center text-sm font-black text-slate-700 dark:text-slate-400" colSpan={headers.length + 1}>
                     No records found.
                   </td>
                 </tr>
@@ -219,7 +219,7 @@ export function AdminRowActionMenu({
           const className = `block w-full rounded-xl px-3 py-2 text-left text-xs font-black transition ${
             action.destructive
               ? "text-rose-600 hover:bg-rose-50 dark:text-rose-200 dark:hover:bg-rose-300/10"
-              : "text-slate-600 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-cyan-200"
+              : "text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-cyan-200"
           } ${action.disabled ? "pointer-events-none opacity-45" : ""}`;
 
           if (action.href) {
@@ -291,4 +291,4 @@ export function AdminPageFrame({
 }
 
 export const inputClass =
-  "w-full rounded-[1.1rem] border border-slate-200 bg-white/76 px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-300/20 dark:border-white/10 dark:bg-white/8 dark:text-slate-200";
+  "w-full rounded-[1.1rem] border border-slate-200 bg-white/76 px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-600 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-300/20 dark:border-white/10 dark:bg-white/8 dark:text-slate-200 dark:placeholder:text-slate-400";

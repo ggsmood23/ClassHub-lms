@@ -44,7 +44,7 @@ export default async function Page({ params }: PageProps) {
           <Detail label="Course" value={course?.title || "Deleted course"} />
           <Detail label="Amount" value={formatINR(payment.amount ?? 0)} />
           <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-            <p className="text-sm font-black text-slate-500 dark:text-slate-400">Status</p>
+            <p className="text-sm font-black text-slate-700 dark:text-slate-400">Status</p>
             <div className="mt-3">
               <StatusBadge status={payment.status || "pending"} />
             </div>
@@ -63,7 +63,7 @@ export default async function Page({ params }: PageProps) {
 function Detail({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-      <p className="text-sm font-black text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-sm font-black text-slate-700 dark:text-slate-400">{label}</p>
       <p className="mt-2 break-words text-xl font-black">{value}</p>
     </div>
   );

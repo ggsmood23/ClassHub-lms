@@ -125,7 +125,7 @@ export function AdminShell({
               >
                 <Menu className="size-5" />
               </button>
-              <div className="hidden h-11 w-96 max-w-[32vw] items-center gap-3 rounded-full border border-slate-200/80 bg-white/72 px-4 text-sm font-semibold text-slate-500 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/10 dark:text-slate-400 md:flex">
+              <div className="hidden h-11 w-96 max-w-[32vw] items-center gap-3 rounded-full border border-slate-200/80 bg-white/72 px-4 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/10 dark:text-slate-400 md:flex">
                 <Search className="size-4" />
                 Search users, courses, reports
               </div>
@@ -170,12 +170,12 @@ export function AdminShell({
                             </span>
                             <div>
                               <p className="text-sm font-black">{item.title}</p>
-                              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{item.message}</p>
+                              <p className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-400">{item.message}</p>
                             </div>
                           </div>
                         ))}
                         {notifications.length === 0 ? (
-                          <p className="rounded-2xl bg-slate-50/80 p-3 text-sm font-semibold text-slate-500 dark:bg-white/8 dark:text-slate-400">
+                          <p className="rounded-2xl bg-slate-50/80 p-3 text-sm font-semibold text-slate-700 dark:bg-white/8 dark:text-slate-400">
                             No admin alerts yet.
                           </p>
                         ) : null}
@@ -213,7 +213,7 @@ function AdminSidebar({ onNavigate }: Readonly<{ onNavigate: () => void }>) {
         </span>
         <span>
           <span className="block text-lg font-black tracking-tight">Class Hub</span>
-          <span className="block text-xs font-bold text-slate-500 dark:text-slate-400">Admin command</span>
+          <span className="block text-xs font-bold text-slate-700 dark:text-slate-400">Admin command</span>
         </span>
       </RoleAwareLogoLink>
 
@@ -230,15 +230,15 @@ function AdminSidebar({ onNavigate }: Readonly<{ onNavigate: () => void }>) {
               className={`group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-black transition ${
                 active
                   ? "bg-slate-950 text-white shadow-lg shadow-cyan-500/15 dark:bg-white dark:text-slate-950"
-                  : "text-slate-600 hover:bg-white/80 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                  : "text-slate-700 hover:bg-white/80 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               }`}
             >
-              <span className={`grid size-9 place-items-center rounded-xl ${active ? "bg-white/12 dark:bg-slate-950/8" : "bg-slate-100/80 text-slate-500 group-hover:text-cyan-600 dark:bg-white/8 dark:text-slate-400"}`}>
+              <span className={`grid size-9 place-items-center rounded-xl ${active ? "bg-white/12 dark:bg-slate-950/8" : "bg-slate-100/80 text-slate-700 group-hover:text-cyan-600 dark:bg-white/8 dark:text-slate-400"}`}>
                 <Icon className="size-4" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block">{item.label}</span>
-                <span className={`block text-xs font-bold ${active ? "text-cyan-200 dark:text-cyan-700" : "text-slate-400"}`}>
+                <span className={`block text-xs font-bold ${active ? "text-cyan-200 dark:text-cyan-700" : "text-slate-700 dark:text-slate-400"}`}>
                   {item.helper}
                 </span>
               </span>
@@ -254,7 +254,7 @@ function AdminSidebar({ onNavigate }: Readonly<{ onNavigate: () => void }>) {
           </span>
           <div>
             <p className="text-sm font-black">Platform health</p>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">97% stable operations</p>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-400">97% stable operations</p>
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/80 dark:bg-white/10">

@@ -458,9 +458,9 @@ export function PlatformChart({ data }: Readonly<{ data: AdminChartRow[] }>) {
                 <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
-            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--admin-chart-grid)" />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--admin-chart-tick)", fontSize: 12, fontWeight: 700 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--admin-chart-tick)", fontSize: 12, fontWeight: 700 }} />
             <Tooltip contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }} />
             <Area type="monotone" dataKey="students" stroke="#06b6d4" strokeWidth={3} fill="url(#adminGrowth)" />
             <Area type="monotone" dataKey="teachers" stroke="#10b981" strokeWidth={2} fill="transparent" />
@@ -477,9 +477,9 @@ export function RevenueChart({ data }: Readonly<{ data: AdminChartRow[] }>) {
       <ClientChartFrame>
         <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={288} debounce={80}>
           <BarChart data={data} margin={{ left: -18, right: 8, top: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
-            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--admin-chart-grid)" />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--admin-chart-tick)", fontSize: 12, fontWeight: 700 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--admin-chart-tick)", fontSize: 12, fontWeight: 700 }} />
             <Tooltip
               contentStyle={{ borderRadius: 18, border: "1px solid rgba(148,163,184,0.25)", fontWeight: 700 }}
               formatter={(value) => (typeof value === "number" ? formatINR(value) : value)}
@@ -531,7 +531,7 @@ function CategoryMix({ data }: Readonly<{ data: Array<{ name: string; value: num
           </PieChart>
         </ResponsiveContainer>
       </ClientChartFrame>
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-black text-slate-500 dark:text-slate-400">
+      <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-black text-slate-700 dark:text-slate-400">
         {data.map((item, index) => (
           <span key={item.name} className="inline-flex items-center gap-2">
             <span className="size-2.5 rounded-full" style={{ background: pieColors[index % pieColors.length] }} />
@@ -552,7 +552,7 @@ function ActivityFeed({ items }: Readonly<{ items: Array<[string, string, string
             <span className="mt-1 size-2.5 shrink-0 rounded-full bg-cyan-400 shadow-[0_0_0_6px_rgba(34,211,238,0.12)]" />
             <div className="min-w-0">
               <p className="font-black">{title}</p>
-              <p className="mt-1 text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">{helper}</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-400">{helper}</p>
               <p className="mt-1 text-xs font-black text-cyan-700 dark:text-cyan-200">{time}</p>
             </div>
           </div>

@@ -48,7 +48,7 @@ export default async function Page({ params }: PageProps) {
           <Detail label="Category" value={course.category || "Uncategorized"} />
           <Detail label="Level" value={course.level || "Beginner"} />
           <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-            <p className="text-sm font-black text-slate-500 dark:text-slate-400">Status</p>
+            <p className="text-sm font-black text-slate-700 dark:text-slate-400">Status</p>
             <div className="mt-3">
               <StatusBadge status={course.status || "Published"} />
             </div>
@@ -59,14 +59,14 @@ export default async function Page({ params }: PageProps) {
           <Detail label="Created" value={formatDate(course.createdAt)} />
           <Detail label="Successful revenue" value={formatINR(revenue[0]?.total ?? 0)} />
         </div>
-        <p className="mt-5 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
+        <p className="mt-5 max-w-3xl text-sm font-semibold leading-6 text-slate-700 dark:text-slate-400">
           {course.description || "No course description has been added."}
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link className="rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-cyan-600 dark:bg-white dark:text-slate-950" href={`/courses/${course._id}`}>
             View public course
           </Link>
-          <Link className="rounded-full border border-slate-200 px-5 py-3 text-sm font-black text-slate-600 transition hover:border-cyan-300 dark:border-white/10 dark:text-slate-300" href="/admin/courses">
+          <Link className="rounded-full border border-slate-200 px-5 py-3 text-sm font-black text-slate-700 transition hover:border-cyan-300 dark:border-white/10 dark:text-slate-300" href="/admin/courses">
             Back to courses
           </Link>
         </div>
@@ -78,7 +78,7 @@ export default async function Page({ params }: PageProps) {
 function Detail({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-      <p className="text-sm font-black text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-sm font-black text-slate-700 dark:text-slate-400">{label}</p>
       <p className="mt-2 break-words text-xl font-black">{value}</p>
     </div>
   );

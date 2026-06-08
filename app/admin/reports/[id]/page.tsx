@@ -43,13 +43,13 @@ export default async function Page({ params }: PageProps) {
           <Detail label="Rating" value={`${review.rating ?? 0}/5`} />
           <Detail label="Created" value={formatDate(review.createdAt)} />
           <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-            <p className="text-sm font-black text-slate-500 dark:text-slate-400">Status</p>
+            <p className="text-sm font-black text-slate-700 dark:text-slate-400">Status</p>
             <div className="mt-3">
               <StatusBadge status={review.moderationStatus === "resolved" ? "Resolved" : "Published"} />
             </div>
           </div>
         </div>
-        <p className="mt-5 max-w-3xl rounded-[1.25rem] bg-white/58 p-4 text-sm font-semibold leading-6 text-slate-600 dark:bg-white/5 dark:text-slate-300">
+        <p className="mt-5 max-w-3xl rounded-[1.25rem] bg-white/58 p-4 text-sm font-semibold leading-6 text-slate-700 dark:bg-white/5 dark:text-slate-300">
           {review.review}
         </p>
         <Link className="mt-6 inline-flex rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-cyan-600 dark:bg-white dark:text-slate-950" href="/admin/reports">
@@ -63,7 +63,7 @@ export default async function Page({ params }: PageProps) {
 function Detail({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
-      <p className="text-sm font-black text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-sm font-black text-slate-700 dark:text-slate-400">{label}</p>
       <p className="mt-2 break-words text-xl font-black">{value}</p>
     </div>
   );
