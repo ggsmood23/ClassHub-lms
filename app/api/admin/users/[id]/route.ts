@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/auth/current-user";
+import Certificate from "@/lib/models/Certificate";
+import Course from "@/lib/models/Course";
+import Enrollment from "@/lib/models/Enrollment";
+import Notification from "@/lib/models/Notification";
+import Payment from "@/lib/models/Payment";
+import Review from "@/lib/models/Review";
 import User from "@/lib/models/User";
 import { toJsonSafe } from "@/lib/serialization";
 
@@ -99,6 +105,62 @@ export async function PATCH(request: Request, context: UserRouteContext) {
     console.error("Admin update user error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update user" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(_: Request, context: UserRouteContext) {
+  try {
+    const currentAdmin = await getCurrentAdmin();
+
+    if ("error" in currentAdmin) {
+      return NextResponse.json(
+        { success: false, message: currentAdmin.error },
+        { status: currentAdmin.status },
+      );
+    }
+
+    const { id } = await context.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid user id" },
+        { status: 400 },
+      );
+    }
+
+    if (String(currentAdmin.user._id) === id) {
+      return NextResponse.json(
+        { success: false, message: "Admins cannot delete their own account" },
+        { status: 400 },
+      );
+    }
+
+    const user = await User.findByIdAndDelete(id).select("_id");
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 },
+      );
+    }
+
+    await Promise.all([
+      Course.updateMany({ teacher: user._id }, { $unset: { teacher: "" } }),
+      Course.updateMany({ students: user._id }, { $pull: { students: user._id } }),
+      Enrollment.deleteMany({ student: user._id }),
+      Review.deleteMany({ student: user._id }),
+      Payment.deleteMany({ student: user._id }),
+      Certificate.deleteMany({ student: user._id }),
+      Notification.deleteMany({ user: user._id }),
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Admin delete user error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to delete user" },
       { status: 500 },
     );
   }

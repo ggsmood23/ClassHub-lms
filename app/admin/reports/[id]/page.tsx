@@ -45,7 +45,7 @@ export default async function Page({ params }: PageProps) {
           <div className="rounded-[1.25rem] bg-white/58 p-4 dark:bg-white/5">
             <p className="text-sm font-black text-slate-500 dark:text-slate-400">Status</p>
             <div className="mt-3">
-              <StatusBadge status="Published" />
+              <StatusBadge status={review.moderationStatus === "resolved" ? "Resolved" : "Published"} />
             </div>
           </div>
         </div>

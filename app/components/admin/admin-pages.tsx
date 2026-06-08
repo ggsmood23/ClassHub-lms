@@ -314,12 +314,13 @@ function UserRoleControl({
 
       if (!response.ok) {
         const result = await response.json();
-        throw new Error(result.message || "Failed to update role");
+        throw new Error(result.message || "Failed to update user");
       }
 
       router.refresh();
-    } catch {
+    } catch (error) {
       setRole(user.role);
+      window.alert(error instanceof Error ? error.message : "Failed to update user");
     } finally {
       setIsSaving(false);
     }
@@ -328,6 +329,53 @@ function UserRoleControl({
   async function handleChange(nextRole: "student" | "teacher" | "admin") {
     setRole(nextRole);
     await updateUser({ role: nextRole });
+  }
+
+  async function editUser() {
+    const nextRole = window.prompt("Enter a role: student, teacher, or admin", role);
+
+    if (nextRole === null) {
+      return;
+    }
+
+    if (nextRole !== "student" && nextRole !== "teacher" && nextRole !== "admin") {
+      window.alert("Role must be student, teacher, or admin.");
+      return;
+    }
+
+    setRole(nextRole);
+    await updateUser({ role: nextRole });
+  }
+
+  async function deleteUser() {
+    if (!window.confirm(`Delete ${user.name}? This removes the account and associated student records.`)) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to delete user");
+      }
+
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete user");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function suspendUser() {
+    if (!window.confirm(`Suspend ${user.name}? They will not be able to use their account until reactivated.`)) {
+      return;
+    }
+
+    await updateUser({ accountStatus: "suspended" });
   }
 
   const isSelf = user.id === currentAdminId;
@@ -349,12 +397,28 @@ function UserRoleControl({
       <AdminRowActionMenu
         label={`Open actions for ${user.name}`}
         actions={[
-          { label: "View", href: `/admin/users/${user.id}` },
+          { label: "View User", href: `/admin/users/${user.id}` },
           {
-            label: isSuspended ? "Activate" : "Suspend",
+            label: "Edit User",
             disabled: isSaving || isSelf,
-            destructive: !isSuspended,
-            onSelect: () => updateUser({ accountStatus: isSuspended ? "active" : "suspended" }),
+            onSelect: editUser,
+          },
+          {
+            label: "Suspend User",
+            disabled: isSaving || isSelf || isSuspended,
+            destructive: true,
+            onSelect: suspendUser,
+          },
+          {
+            label: "Activate User",
+            disabled: isSaving || isSelf || !isSuspended,
+            onSelect: () => updateUser({ accountStatus: "active" }),
+          },
+          {
+            label: "Delete User",
+            disabled: isSaving || isSelf,
+            destructive: true,
+            onSelect: deleteUser,
           },
         ]}
       />
@@ -369,14 +433,14 @@ function CourseActions({
   const router = useRouter();
   const [isBusy, setIsBusy] = useState(false);
 
-  async function updateCourseStatus(status: "Draft" | "Review" | "Published" | "Unpublished" | "Rejected") {
+  async function updateCourse(payload: { title?: string; status?: "Draft" | "Review" | "Published" | "Unpublished" | "Rejected" }) {
     setIsBusy(true);
 
     try {
-      const response = await fetch(`/api/courses/${course.id}`, {
-        method: "PUT",
+      const response = await fetch(`/api/admin/courses/${course.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -385,9 +449,25 @@ function CourseActions({
       }
 
       router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to update course");
     } finally {
       setIsBusy(false);
     }
+  }
+
+  async function updateCourseStatus(status: "Draft" | "Review" | "Published" | "Unpublished" | "Rejected") {
+    await updateCourse({ status });
+  }
+
+  async function editCourse() {
+    const title = window.prompt("Edit course title", course.title);
+
+    if (title === null) {
+      return;
+    }
+
+    await updateCourse({ title });
   }
 
   async function deleteCourse() {
@@ -396,13 +476,21 @@ function CourseActions({
     }
 
     setIsBusy(true);
-    const response = await fetch(`/api/courses/${course.id}`, { method: "DELETE" });
 
-    if (response.ok) {
+    try {
+      const response = await fetch(`/api/admin/courses/${course.id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to delete course");
+      }
+
       router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete course");
+    } finally {
+      setIsBusy(false);
     }
-
-    setIsBusy(false);
   }
 
   const isPublished = course.status === "Published";
@@ -411,12 +499,21 @@ function CourseActions({
     <AdminRowActionMenu
       label={`Open actions for ${course.title}`}
       actions={[
-        { label: "View", href: `/courses/${course.id}` },
-        { label: "Edit", href: `/admin/courses/${course.id}` },
+        { label: "View Course", href: `/admin/courses/${course.id}` },
+        { label: "Edit Course", disabled: isBusy, onSelect: editCourse },
         ...(approvalMode
           ? [
               { label: "Approve", disabled: isBusy, onSelect: () => updateCourseStatus("Published") },
-              { label: "Reject", disabled: isBusy, destructive: true, onSelect: () => updateCourseStatus("Rejected") },
+              {
+                label: "Reject",
+                disabled: isBusy,
+                destructive: true,
+                onSelect: () => {
+                  if (window.confirm(`Reject ${course.title}?`)) {
+                    updateCourseStatus("Rejected");
+                  }
+                },
+              },
             ]
           : [
               {
@@ -425,7 +522,7 @@ function CourseActions({
                 onSelect: () => updateCourseStatus(isPublished ? "Unpublished" : "Published"),
               },
             ]),
-        { label: "Delete", disabled: isBusy, destructive: true, onSelect: deleteCourse },
+        { label: "Delete Course", disabled: isBusy, destructive: true, onSelect: deleteCourse },
       ]}
     />
   );
@@ -436,7 +533,7 @@ function PaymentActions({ payment }: Readonly<{ payment: AdminPaymentRow }>) {
     <AdminRowActionMenu
       label={`Open actions for payment ${payment.transactionId}`}
       actions={[
-        { label: "View", href: `/admin/payments/${payment.id}` },
+        { label: "View Payment", href: `/admin/payments/${payment.id}` },
       ]}
     />
   );
@@ -444,29 +541,37 @@ function PaymentActions({ payment }: Readonly<{ payment: AdminPaymentRow }>) {
 
 function ReviewActions({ review }: Readonly<{ review: AdminReviewRow }>) {
   const router = useRouter();
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
 
-  async function deleteReview() {
-    if (!window.confirm("Remove this review?")) {
-      return;
-    }
+  async function resolveReport() {
+    setIsResolving(true);
 
-    setIsDeleting(true);
-    const response = await fetch(`/api/reviews/${review.id}`, { method: "DELETE" });
+    try {
+      const response = await fetch(`/api/admin/reports/${review.id}`, { method: "PATCH" });
 
-    if (response.ok) {
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to resolve report");
+      }
+
       router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to resolve report");
+    } finally {
+      setIsResolving(false);
     }
-
-    setIsDeleting(false);
   }
 
   return (
     <AdminRowActionMenu
       label="Open review actions"
       actions={[
-        { label: "View", href: `/admin/reports/${review.id}` },
-        { label: "Delete", disabled: isDeleting, destructive: true, onSelect: deleteReview },
+        { label: "View Report", href: `/admin/reports/${review.id}` },
+        {
+          label: "Resolve Report",
+          disabled: isResolving || review.status === "Resolved",
+          onSelect: resolveReport,
+        },
       ]}
     />
   );

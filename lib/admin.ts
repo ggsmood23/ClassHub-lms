@@ -337,6 +337,7 @@ export async function getAdminReviews(limit = 100): Promise<AdminReviewRow[]> {
       course?: { title?: string } | null;
       rating?: number;
       review?: string;
+      moderationStatus?: "published" | "resolved";
       createdAt?: Date;
     }>>();
 
@@ -346,7 +347,7 @@ export async function getAdminReviews(limit = 100): Promise<AdminReviewRow[]> {
     course: review.course?.title || "Deleted course",
     rating: String(review.rating ?? 0),
     review: review.review || "",
-    status: "Published",
+    status: review.moderationStatus === "resolved" ? "Resolved" : "Published",
     created: formatDate(review.createdAt),
   }));
 }

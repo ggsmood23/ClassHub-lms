@@ -27,6 +27,12 @@ const ReviewSchema = new Schema(
       trim: true,
       maxlength: 1200,
     },
+
+    moderationStatus: {
+      type: String,
+      enum: ["published", "resolved"],
+      default: "published",
+    },
   },
   { timestamps: true },
 );

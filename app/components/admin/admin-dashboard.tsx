@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   Bell,
   BadgeDollarSign,
@@ -47,6 +49,7 @@ type RecentUserRow = {
   name: string;
   email: string;
   role: string;
+  accountStatus: string;
   status: string;
   joined: string;
 };
@@ -183,12 +186,7 @@ export function AdminDashboard({
                   <StatusBadge key={row.status} status={row.status} />,
                   row.joined,
                 ]}
-                renderActions={(row) => (
-                  <AdminRowActionMenu
-                    label={`Open actions for ${row.name}`}
-                    actions={[{ label: "View", href: `/admin/users/${row.id}` }]}
-                  />
-                )}
+                renderActions={(row) => <DashboardUserActions user={row} />}
               />
             </AdminPanel>
             <AdminPanel eyebrow="Courses" title="Recent courses">
@@ -206,15 +204,7 @@ export function AdminDashboard({
                   <StatusBadge key={row.status} status={row.status} />,
                   row.created,
                 ]}
-                renderActions={(row) => (
-                  <AdminRowActionMenu
-                    label={`Open actions for ${row.title}`}
-                    actions={[
-                      { label: "View", href: `/courses/${row.id}` },
-                      { label: "Edit", href: `/admin/courses/${row.id}` },
-                    ]}
-                  />
-                )}
+                renderActions={(row) => <DashboardCourseActions course={row} />}
               />
             </AdminPanel>
             <AdminPanel eyebrow="Payments" title="Recent payments">
@@ -234,7 +224,7 @@ export function AdminDashboard({
                 renderActions={(row) => (
                   <AdminRowActionMenu
                     label={`Open actions for payment ${row.transactionId}`}
-                    actions={[{ label: "View", href: `/admin/payments/${row.id}` }]}
+                    actions={[{ label: "View Payment", href: `/admin/payments/${row.id}` }]}
                   />
                 )}
               />
@@ -249,6 +239,181 @@ export function AdminDashboard({
         </div>
       </div>
     </section>
+  );
+}
+
+function DashboardUserActions({ user }: Readonly<{ user: RecentUserRow }>) {
+  const router = useRouter();
+  const [isBusy, setIsBusy] = useState(false);
+  const isSuspended = user.accountStatus === "suspended";
+
+  async function updateUser(payload: { role?: "student" | "teacher" | "admin"; accountStatus?: "active" | "suspended" }) {
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to update user");
+      }
+
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to update user");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function editUser() {
+    const nextRole = window.prompt("Enter a role: student, teacher, or admin", user.role);
+
+    if (nextRole === null) {
+      return;
+    }
+
+    if (nextRole !== "student" && nextRole !== "teacher" && nextRole !== "admin") {
+      window.alert("Role must be student, teacher, or admin.");
+      return;
+    }
+
+    await updateUser({ role: nextRole });
+  }
+
+  async function suspendUser() {
+    if (!window.confirm(`Suspend ${user.name}? They will not be able to use their account until reactivated.`)) {
+      return;
+    }
+
+    await updateUser({ accountStatus: "suspended" });
+  }
+
+  async function deleteUser() {
+    if (!window.confirm(`Delete ${user.name}? This removes the account and associated student records.`)) {
+      return;
+    }
+
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to delete user");
+      }
+
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete user");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  return (
+    <AdminRowActionMenu
+      label={`Open actions for ${user.name}`}
+      actions={[
+        { label: "View User", href: `/admin/users/${user.id}` },
+        { label: "Edit User", disabled: isBusy, onSelect: editUser },
+        {
+          label: "Suspend User",
+          disabled: isBusy || isSuspended,
+          destructive: true,
+          onSelect: suspendUser,
+        },
+        {
+          label: "Activate User",
+          disabled: isBusy || !isSuspended,
+          onSelect: () => updateUser({ accountStatus: "active" }),
+        },
+        { label: "Delete User", disabled: isBusy, destructive: true, onSelect: deleteUser },
+      ]}
+    />
+  );
+}
+
+function DashboardCourseActions({ course }: Readonly<{ course: RecentCourseRow }>) {
+  const router = useRouter();
+  const [isBusy, setIsBusy] = useState(false);
+  const isPublished = course.status === "Published";
+
+  async function updateCourse(payload: { title?: string; status?: "Published" | "Unpublished" }) {
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/admin/courses/${course.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to update course");
+      }
+
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to update course");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function editCourse() {
+    const title = window.prompt("Edit course title", course.title);
+
+    if (title === null) {
+      return;
+    }
+
+    await updateCourse({ title });
+  }
+
+  async function deleteCourse() {
+    if (!window.confirm(`Delete ${course.title}? This removes enrollments, payments, reviews, assignments, and certificates for this course.`)) {
+      return;
+    }
+
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/admin/courses/${course.id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to delete course");
+      }
+
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete course");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  return (
+    <AdminRowActionMenu
+      label={`Open actions for ${course.title}`}
+      actions={[
+        { label: "View Course", href: `/admin/courses/${course.id}` },
+        { label: "Edit Course", disabled: isBusy, onSelect: editCourse },
+        {
+          label: isPublished ? "Unpublish" : "Publish",
+          disabled: isBusy,
+          onSelect: () => updateCourse({ status: isPublished ? "Unpublished" : "Published" }),
+        },
+        { label: "Delete Course", disabled: isBusy, destructive: true, onSelect: deleteCourse },
+      ]}
+    />
   );
 }
 
